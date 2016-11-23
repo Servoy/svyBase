@@ -1,0 +1,12 @@
+customProperties:"formComponent:false,\
+methods:{\
+onElementDataChangeMethodID:{\
+arguments:null,\
+parameters:null\
+}\
+}",
+extendsID:"A067CBCF-1E4E-480A-9868-2AF5451921A1",
+name:"svyBaseCRUD",
+onElementDataChangeMethodID:"309166A4-E459-41AC-9B55-165B1FD54845",
+typeid:3,
+uuid:"BC98FB44-E326-44B9-9BBB-E6DA66FC79E5"
