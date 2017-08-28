@@ -1,33 +1,26 @@
-/**
- * @public 
- * @enum 
- * @properties={typeid:35,uuid:"B8C7F8C1-7818-444E-9B2C-AA6857B480C5",variableType:-4}
+/*
+ * TODO Possible to generate a foundset change event by trapping the selection event and comparing foundsets
+ * TODO Consider a top-level broadcast instead of listeners
+ * i.e. a form event is broadcast regardless of added listenefrs
+ * another form might be interested in any visible form's element data changef or example 
+ * 
+ * TODO Consider a way to watch all svyBase contained forms for events 
  */
-var EVENTS = {
-	ELEMENT_DATA_CHANGE:'elementDataChange',	
-	ELEMENT_FOCUS_GAINED:'elementFocusGained',
-	ELEMENT_FOCUS_LOST:'elementFocusLost',
-	FORM_HIDE:'formHide',
-	FORM_LOAD:'formLoad',
-	RECORD_EDIT_START:'recordEditStart',
-	RECORD_EDIT_STOP:'recordEditStop',
-	RECORD_SELECTION:'recordSelection',
-	FORM_RESIZE:'formResize',
-	FORM_SHOW:'formShow',
-	FORM_UNLOAD:'formUnload'
-}
 
-/**
- * @private 
- * @properties={typeid:35,uuid:"A0D41791-4D42-40EC-BF4D-70DE912CAE26",variableType:-4}
- */
-var eventSupport = new scopes.svyEventManager.EventSupport(this);
 
-/**
- * @private 
- * @properties={typeid:35,uuid:"7E7796BF-C9B8-4B05-95D0-C321840C6781",variableType:-4}
- */
-var propertyChangeSupport = new scopes.svyEventManager.PropertyChangeSupport(this);
+
+///**
+// * @deprecated Use only bubbling
+// * @private 
+// * @properties={typeid:35,uuid:"A0D41791-4D42-40EC-BF4D-70DE912CAE26",variableType:-4}
+// */
+//var eventSupport = new scopes.svyEventManager.EventSupport(this);
+
+///**
+// * @private 
+// * @properties={typeid:35,uuid:"7E7796BF-C9B8-4B05-95D0-C321840C6781",variableType:-4}
+// */
+//var propertyChangeSupport = new scopes.svyEventManager.PropertyChangeSupport(this);
 
 /**
  * @protected 
@@ -75,7 +68,8 @@ function addAction(command, handler, isToggle){
 }
 
 /**
- * @public  
+ * @deprecated Use only bubbling
+ * @private   
  * @param listener
  * @param eventType
  *
@@ -86,7 +80,8 @@ function addEventListener(listener,eventType){
 }
 
 /**
- * @public  
+ * @deprecated use bubbling
+ * @private   
  * @param listener
  * @param eventType
  *
@@ -97,7 +92,8 @@ function removeEventListener(listener, eventType){
 }
 
 /**
- * @protected 
+ * @deprecated use bubbling only
+ * @private  
  * @param eventType
  * @param {*} [args]
  * @param {Boolean} [vetoable]
@@ -109,7 +105,8 @@ function fireEvent(eventType,args, vetoable){
 }
 
 /**
- * @public 
+ * @deprecated Use only bubbling
+ * @private 
  * @param {Function} listener
  * @param {String} [propertyName]
  *
@@ -120,7 +117,8 @@ function addPropertyChangeListener(listener, propertyName){
 }
 
 /**
- * @public 
+ * @deprecated Use only bubbling
+ * @private 
  * @param {Function} listener
  * @param {String} [propertyName]
  *
@@ -131,7 +129,8 @@ function removePropertyChangeListener(listener, propertyName){
 }
 
 /**
- * @protected 
+ * @deprecated use bubbling only
+ * @private 
  * @param {String} propertyName
  * @param {Object} oldValue
  * @param {Object} newValue
@@ -169,8 +168,10 @@ function updateUI(){
  * @properties={typeid:24,uuid:"F0158F6D-AE28-45F9-BFF1-D50AB2504F28"}
  */
 function onElementDataChange(oldValue, newValue, event) {
+	
 	updateUI();
-	return fireEvent(EVENTS.ELEMENT_DATA_CHANGE,{oldValue:oldValue,newValue:newValue},true).isVetoed();
+	return bubble(event);
+//	return !fireEvent(EVENTS.ELEMENT_DATA_CHANGE,{oldValue:oldValue,newValue:newValue},true).isVetoed();
 }
 
 /**
@@ -184,7 +185,7 @@ function onElementDataChange(oldValue, newValue, event) {
  */
 function onRecordSelection(event) {
 	updateUI();
-	fireEvent(EVENTS.RECORD_SELECTION);
+	bubble(event);
 }
 
 /**
@@ -199,7 +200,7 @@ function onRecordSelection(event) {
  */
 function onShow(firstShow, event) {
 	updateUI();
-	fireEvent(EVENTS.FORM_SHOW);
+	bubble(event);
 }
 
 /**
@@ -214,7 +215,7 @@ function onShow(firstShow, event) {
  * @properties={typeid:24,uuid:"435BD246-195F-468F-A231-91548DF1C0EC"}
  */
 function onElementFocusGained(event) {
-	return fireEvent(EVENTS.ELEMENT_FOCUS_GAINED, null, true).isVetoed();
+	return bubble(event);
 }
 
 /**
@@ -229,7 +230,7 @@ function onElementFocusGained(event) {
  * @properties={typeid:24,uuid:"1025D295-9A86-4D6E-8F14-2A5BE7317CEB"}
  */
 function onElementFocusLost(event) {
-	return fireEvent(EVENTS.ELEMENT_FOCUS_LOST,  null, true).isVetoed();
+	return bubble(event);
 }
 
 /**
@@ -244,7 +245,7 @@ function onElementFocusLost(event) {
  * @properties={typeid:24,uuid:"F2F39B1A-2DDC-4F8D-ACD4-20E8627AD397"}
  */
 function onHide(event) {
-	return fireEvent(EVENTS.FORM_HIDE,null,true).isVetoed();
+	return bubble(event);
 }
 
 /**
@@ -273,7 +274,7 @@ function onLoad(event) {
  */
 function onRecordEditStart(event) {
 	updateUI();
-	return fireEvent(EVENTS.RECORD_EDIT_START, null, true).isVetoed();
+	return bubble(event);
 }
 
 /**
@@ -290,7 +291,7 @@ function onRecordEditStart(event) {
  */
 function onRecordEditStop(record, event) {
 	updateUI();
-	return fireEvent(EVENTS.RECORD_EDIT_STOP, null, true).isVetoed();
+	return bubble(event);
 }
 
 /**
@@ -304,7 +305,7 @@ function onRecordEditStop(record, event) {
  */
 function onResize(event) {
 	updateUI();
-	fireEvent(EVENTS.FORM_RESIZE);
+	bubble(event);
 }
 
 /**
@@ -317,5 +318,46 @@ function onResize(event) {
  * @properties={typeid:24,uuid:"272A5E65-70D8-4779-BFE8-DBEB5CE0302B"}
  */
 function onUnload(event) {
-	fireEvent(EVENTS.FORM_UNLOAD);
+	bubble(event);
+}
+
+/**
+ * TODO Propagation is currently blocked by a non-svyBase form in between. This could be routed
+ * 
+ * @private 
+ * @param {JSEvent} event
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"83976541-2B87-4AA1-8040-76D0D53EEAF4"}
+ */
+function bubble(event){
+
+	// skip event bubble handler if THIS form is same as source
+	if(event.getFormName() != controller.getName()){
+		
+		// bubble handler / check if blocked
+		if(onEventBubble(event) === false){
+			return false;
+		}
+	}
+	
+	// bubble to parent form
+	/** @type {RuntimeForm<svyBase>} */
+	var parent = forms[scopes.svyUI.getParentFormName(this)];
+	if(parent && scopes.svyUI.isJSFormInstanceOf(parent,forms.svyBase)){
+		 return parent.bubble(event); // TODO suppress warning
+	}
+	
+	// outer-most form has been reached
+	return true;
+}
+
+/**
+ * @protected
+ * @param {JSEvent} event 
+ * @return {Boolean}
+ *
+ * @properties={typeid:24,uuid:"D8FB0D9B-0DCD-4701-9A1C-79D424D62E8A"}
+ */
+function onEventBubble(event){
+	return true;
 }

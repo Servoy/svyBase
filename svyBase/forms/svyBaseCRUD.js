@@ -1,121 +1,32 @@
-/**
- * @public 
- * @enum 
- * @properties={typeid:35,uuid:"71FE3498-2E20-44CF-8F77-B6DE74833ACC",variableType:-4}
+/*
+ *	TODO Consider Locking
+ *  TODO Consider multi-select-enabled foundsets
+ *	TODO Consider optimistic save vs transactional 
+ *  
  */
-var FORM_HIDE_POLICY = {
-	
-	/**
-	 * Prevents this form from hiding while editing
-	 * @type {String}
-	 */
-	PREVENT_WHEN_EDITING:'prevent-when-editing',
-	
-	/**
-	 * Allows this form to hide while editing
-	 * @type {String}
-	 */
-	ALLOW_WHEN_EDITING:'allow-when-editing'
-};
+
 
 /**
- * @public 
- * @enum 
- * @properties={typeid:35,uuid:"48721F72-EEBE-4288-B779-684813499BA5",variableType:-4}
+ * @protected 
+ * @properties={typeid:35,uuid:"C86C5862-377B-417B-BD56-4843BE201DC0",variableType:-4}
  */
-var CRUD_SCOPE_POLICY = {
-	
-	ALL : 'all',
-	
-	FOUNDSET : 'foundset',
-	
-	CURRENT_RECORD : 'current-record',
-	
-	AUTO : 'auto'
+var crudPolicies = scopes.svyCRUDManager.createCRUDPolicies();
+
+/**
+ * @protected 
+ * @return {scopes.svyCRUDManager.CRUDPolicies}
+ * @properties={typeid:24,uuid:"89F329BC-F975-4C32-98D7-7A333A47EA2F"}
+ */
+function getCrudPolicies(){
+	return crudPolicies;
 }
 
-
-/**
- * @public 
- * @enum 
- * @properties={typeid:35,uuid:"5B87FFB8-417E-4176-8C9B-458BA524D305",variableType:-4}
- */
-var RECORD_SELECTION_POLICY = {
-	
-	/**
-	 * Prevents this form from hiding while editing
-	 * @type {String}
-	 */
-	PREVENT_WHEN_EDITING:'prevent-when-editing',
-	
-	/**
-	 * Allows this form to hide while editing
-	 * @type {String}
-	 */
-	ALLOW_WHEN_EDITING:'allow-when-editing'
-};
-
-/**
- * @deprecated 
- * @protected 
- * @enum 
- * @properties={typeid:35,uuid:"9B2DDADD-F781-4DDB-BCDB-A28AFAEFEC35",variableType:-4}
- */
-var MODES = {
-	ADD:'add',
-	EDIT:'edit',
-	BROWSE:'browse'
-};
-
-/**
- * @protected 
- * @enum 
- * @properties={typeid:35,uuid:"6D961F30-5500-42FA-89A9-24922A9491ED",variableType:-4}
- */
-var USER_LEAVE = {
-	SAVE_EDITS:'save',
-	CANCEL_EDITS:'cancel',
-	BLOCK:'block'
-};
-
 /**
  * @private 
- * @type {String}
- *
- * @properties={typeid:35,uuid:"AABAB611-4458-4DB7-9B7E-7E4E22B1D98A"}
+ * @type {Array<scopes.svyValidationManager.ValidationMarker>}
+ * @properties={typeid:35,uuid:"E675958D-88A2-4F16-AE2B-4B0E0364C9A5",variableType:-4}
  */
-var formHidePolicy = FORM_HIDE_POLICY.ALLOW_WHEN_EDITING;
-
-/**
- * @private 
- * @type {String}
- * @properties={typeid:35,uuid:"F9A7C189-FF3C-4D91-9096-C015CCD356C9"}
- */
-var recordSelectionPolicy = RECORD_SELECTION_POLICY.ALLOW_WHEN_EDITING;
-
-/**
- * @private 
- * @type {String}
- * @properties={typeid:35,uuid:"6FC52E39-3172-4E0A-ABE2-95EE2194A171"}
- */
-var crudScopePolicy = CRUD_SCOPE_POLICY.FOUNDSET;
-
-/**
- * @deprecated 
- * @protected 
- * @type {Array<String>}
- * @properties={typeid:35,uuid:"81F18204-48D6-474E-837A-2667C8C00D0F",variableType:-4}
- */
-var managedFoundsets = [];
-
-/**
- * @deprecated 
- * @private 
- * @type {String}
- *
- * @properties={typeid:35,uuid:"909ED036-2F7E-43A7-856D-B109844AE8F9"}
- */
-var mode = MODES.BROWSE;
+var validationMarkers = [];
 
 /**
  * TODO EXPERIMENTAL TEST ME
@@ -124,124 +35,6 @@ var mode = MODES.BROWSE;
  * @properties={typeid:35,uuid:"89983EDF-C8A5-4B52-A2B6-2201FFD1D4D0",variableType:-4}
  */
 var tracking = [];
-	
-/**
- * @deprecated 
- * @protected 
- * @param {String|JSFoundSet} fs named/related foundset or relation name
- *
- * @properties={typeid:24,uuid:"DC5EE517-0551-428C-AB7B-8123C58AAD22"}
- */
-function addManagedFoundset(fs){
-	/** @type {String} */
-	var name;
-	if(fs instanceof JSFoundSet){
-		name = fs.getRelationName();
-	} else {
-		name = fs;
-	}
-	
-	//	unrelated foundset not supported
-	if(!name){
-		// TODO warn
-		return;
-	}
-	
-	//	already added
-	if(managedFoundsets.indexOf(name) >= 0){
-		// TODO debug
-		return;
-	}
-	
-	//	add to list of managed foundsets
-	managedFoundsets.push(name);
-}
-
-/**
- * @deprecated 
- * @protected 
- * @param {String|JSFoundSet} fs named/related foundset or relation name
- * @return {Boolean}
- * 
- * @properties={typeid:24,uuid:"4201C3B7-085C-4097-B861-70EA764B0A96"}
- */
-function removeManagedFoundset(fs){
-	
-	/** @type {String} */
-	var name;
-	if(fs instanceof JSFoundSet){
-		name = fs.getRelationName();
-	} else {
-		name = fs;
-	}
-	
-	//	unrelated foundset not supported
-	if(!name){
-		// TODO warn
-		return false;
-	}
-	
-	//	not managed
-	var index = managedFoundsets.indexOf(name); 
-	if(index == -1){
-		// TODO debug
-		return false;
-	}
-	
-	//	remove
-	managedFoundsets.splice(index,1);
-	return true;
-}
-
-/**
- * @protected 
- * @param {String} m
- * @deprecated 
- * @properties={typeid:24,uuid:"2CE89234-C775-4CDD-B299-174D7F791C97"}
- */
-function setMode(m){
-	mode = m;
-}
-
-/**
- * @protected  
- * @param {String} policy
- *
- * @properties={typeid:24,uuid:"292F7663-E1F7-4F3A-83BF-FF21B0E3B4D8"}
- */
-function setFormHidePolicy(policy){
-	formHidePolicy = policy;
-}
-
-/**
- * @protected  
- * @return {String} policy
- *
- * @properties={typeid:24,uuid:"A6E173C0-CCB5-4508-B3BD-F46373F84F83"}
- */
-function getFormHidePolicy(){
-	return formHidePolicy;
-}
-
-/**
- * @protected  
- * @param policy
- *
- * @properties={typeid:24,uuid:"8A62A8C8-FA22-4A1D-9017-B62E0FD56BA8"}
- */
-function setRecordSelectionPolicy(policy){
-	recordSelectionPolicy = policy;
-}
-
-
-/**
- * @protected  
- * @return {String}
- * @properties={typeid:24,uuid:"4A1D8028-F39E-4E37-9E8B-29F23FB8EF16"}
- */
-function getRecordSelectionPolicy(){
-	return recordSelectionPolicy
-}
 
 /**
  * @public 
@@ -249,25 +42,28 @@ function getRecordSelectionPolicy(){
  * @properties={typeid:24,uuid:"6B9C30B7-28CF-404C-B37D-4624A163C070"}
  */
 function hasEdits(){
-	if(crudScopePolicy == CRUD_SCOPE_POLICY.ALL){
-		return databaseManager.getEditedRecords().length > 0;
-	}
 	
-	if(crudScopePolicy == CRUD_SCOPE_POLICY.FOUNDSET){
-		return databaseManager.hasRecordChanges(foundset);
-	}
-	
-	if(crudScopePolicy == CRUD_SCOPE_POLICY.CURRENT_RECORD){
-		return foundset.getSelectedRecord().hasChangedData();
-	}
-	
-	//	AUTO
-	for(var i in tracking){
-		if(tracking[i].hasChangedData()){
+	var records = getEditedRecords();
+	for(var i in records){
+		if(records[i].hasChangedData() || records[i].isNew()){
 			return true;
 		}
 	}
-	
+	return false;
+}
+
+/**
+ * Indicates if there are ERROR markers on this form since the last validation
+ * @public 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"55BD75F0-EE8A-445C-89E7-6148A70D9DFC"}
+ */
+function hasErrors(){
+	for(var i in validationMarkers){
+		if(validationMarkers[i].getLevel() == scopes.svyValidationManager.VALIDATION_LEVEL.ERROR){
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -277,8 +73,9 @@ function hasEdits(){
  * @properties={typeid:24,uuid:"B05DFAF8-FBDB-4B68-BBC5-E62155E7CAA6"}
  */
 function onUserLeave(){
-	return USER_LEAVE.CANCEL_EDITS;
+	return scopes.svyCRUDManager.USER_LEAVE.CANCEL_EDITS;
 }
+
 
 /**
  * @properties={typeid:24,uuid:"53C0E0C1-925B-4A06-AA0A-0670456433D9"}
@@ -286,12 +83,12 @@ function onUserLeave(){
 function newRecord(){
 	
 	if(hasEdits()){
-		if(recordSelectionPolicy == RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING){
+		if(crudPolicies.getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING){
 			var userLeaveAction = onUserLeave();
-			if(userLeaveAction == USER_LEAVE.BLOCK){
+			if(userLeaveAction == scopes.svyCRUDManager.USER_LEAVE.BLOCK){
 				return;
 			}
-			if(userLeaveAction == USER_LEAVE.SAVE_EDITS){
+			if(userLeaveAction == scopes.svyCRUDManager.USER_LEAVE.SAVE_EDITS){
 				save();
 			} else {
 				cancel();
@@ -300,26 +97,204 @@ function newRecord(){
 	}
 	
 	// create record;
+	// TODO: handler new record failed differently
 	if(foundset.newRecord() == -1){
 		throw 'New record failed';
 	}
 	
-	//	set mode to ADD
-	setMode(MODES.ADD);
+	// track record if tracking on
+	if(crudPolicies.getTransactionScopePolicy() == scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO){
+		track(foundset.getSelectedRecord());
+	}
 }
 
 /**
+ * TODO delete in transaction like FW
+ * TODO remove from tracking
+ * TODO Consider Locking
+ * TODO Consider multi-selection
  * @properties={typeid:24,uuid:"38217020-D34E-413A-AE8E-9D53FD1F1C56"}
  */
 function deleteRecord(){
 	
+	// records to delete
+	var records = foundset.getSelectedRecords();
+	if(!records.length){
+		return false;
+	}
+	
+	// check pre-delete handler(s)
+	if(!beforeDelete()){
+		return false;
+	}
+	
+	// open transaction
+	databaseManager.startTransaction();
+	try {
+		
+		// Delete selected records individually for better error handling
+		for(var i in records){
+			var record = records[i];
+			
+			// delete record
+			try{
+				
+				// handle unexpected error
+				if(!foundset.deleteRecord(record)){
+					throw new scopes.svyDataUtils.DeleteRecordFailedException('Delete Record Failed: ' + record.exception,record);
+				}
+				
+			// handle expected errors, i.e. DELETE_NOT_GRANTED
+			} catch(e){
+				throw new scopes.svyDataUtils.DeleteRecordFailedException(e.message,record);
+			}
+		}
+
+		// commit transaction
+		if(!databaseManager.commitTransaction()){
+			
+			// TODO consider adding transaction failed exception to svyDataUtils
+			throw new scopes.svyDataUtils.SvyDataException('Transaction Failed',foundset);
+		}
+		
+		// remove from tracking
+		if(crudPolicies.getTransactionScopePolicy() == scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO){
+			untrack(records); 
+		}
+		
+		// post-delete handler
+		afterDelete();
+		
+		return true;
+		
+	// handle error condition
+	} catch (e) {
+		
+		// rollback transaction
+		databaseManager.rollbackTransaction();
+		
+		// notify on-error
+		/** @type {scopes.svyDataUtils.DeleteRecordFailedException} */
+		var ex = e;
+		if(!(e instanceof scopes.svyDataUtils.DeleteRecordFailedException)){
+			ex = new scopes.svyDataUtils.DeleteRecordFailedException('Delete failed: ' + e.message, foundset);
+		}
+		onDeleteError(ex);
+		
+		return false;
+	}
 }
 
 /**
+ * @protected 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"4A359896-25AF-4326-A118-9A232249485A"}
+ */
+function beforeDelete(){
+	return true;
+}
+
+/**
+ * @protected 
+ * @properties={typeid:24,uuid:"23E38465-DFD5-41AD-AD15-D31ED60353E3"}
+ */
+function afterDelete(){
+	updateUI();
+}
+
+/**
+ * @protected 
+ * @param {scopes.svyDataUtils.DeleteRecordFailedException} error
+ * @properties={typeid:24,uuid:"0600B27F-F792-4191-BD57-9BA1AEE78601"}
+ */
+function onDeleteError(error){
+	updateUI();
+}
+
+/**
+ * TODO Consider ValidationException with markers passed to onSaveError(e)
+ * TODO Consider multi-selection
+ * TODO consider locking option
  * @properties={typeid:24,uuid:"987117A7-2184-4702-8101-C89EF93F833A"}
  */
 function save(){
 	
+	// collect edited records
+	var records = getEditedRecords();
+	if(!records.length){
+		return false;
+	}
+	
+	// validate
+	if(crudPolicies.getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE){
+		validate();
+		if(hasErrors()){
+			return false;
+		}
+	}
+	
+	// Call before-save handler(s)
+	if(!beforeSave()){
+		return false;
+	}
+	
+	// begin transaction
+	databaseManager.startTransaction();
+	try {
+		
+		// save records 1-by-1
+		for(var i in records){
+			var record = records[i];
+			
+			//	Save: handle failed save
+			if(!databaseManager.saveData(record)){
+				throw new scopes.svyDataUtils.SaveDataFailedException('Save Failed',record);
+			}
+		}
+		
+		// commit transaction
+		if(!databaseManager.commitTransaction()){
+			throw new scopes.svyDataUtils.SaveDataFailedException('Could not commit transaction',record);
+		}
+		
+		// clear tracked records
+		if(crudPolicies.getTransactionScopePolicy() == scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO){
+			clearTracking();
+		}
+		
+		// clear validation markers
+		validationMarkers = [];
+		
+		// post-save handler
+		afterSave();
+		
+		return true;
+		
+	// handle 
+	} catch(e){
+		
+		// rollback transaction
+		databaseManager.rollbackTransaction();
+		
+		// notify on-error
+		/** @type {scopes.svyDataUtils.SaveDataFailedException} */
+		var ex = e;
+		if(!(e instanceof scopes.svyDataUtils.SaveDataFailedException)){
+			ex = new scopes.svyDataUtils.SaveDataFailedException('Save failed: ' + e.message);
+		}
+		onSaveError(ex);
+		
+		return false;
+	}
+}
+
+/**
+ * @protected 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"FAD7AC85-F98C-4CF1-A3B3-6B2FA8A6AB25"}
+ */
+function beforeCancel(){
+	return true;
 }
 
 /**
@@ -327,6 +302,43 @@ function save(){
  */
 function cancel(){
 	
+	// collect edited records
+	var records = getEditedRecords();
+	if(!records.length){
+		return false;
+	}
+	
+	// check pre-cancel handler(s)
+	if(!beforeCancel()){
+		return false;
+	}
+	
+	// revert records 1-by-1
+	for(var i in records){
+		var record = records[i];
+		record.revertChanges();
+	}
+	
+	// clear tracking
+	if(crudPolicies.getTransactionScopePolicy() == scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO){
+		clearTracking();
+	}
+	
+	// clear validation markers
+	validationMarkers = [];
+	
+	// notify post-cancel handler
+	afterCancel();
+	
+	return true;
+}
+
+/**
+ * @protected 
+ * @properties={typeid:24,uuid:"F2ECBD52-7DD1-4B30-945E-D4D707351BBA"}
+ */
+function afterCancel(){
+	updateUI();
 }
 
 /**
@@ -334,6 +346,20 @@ function cancel(){
  */
 function nextRecord(){
 	
+	// check position at end of foundset
+	if(foundset.getSelectedIndex() == foundset.getSize()){
+		return false;
+	}
+	
+	// check pre-move handler
+	if(!beforeMoveRecord()){
+		return false;
+	}
+	
+	// move selection
+	foundset.setSelectedIndex(foundset.getSelectedIndex() + 1 );
+	
+	return true;
 }
 
 /**
@@ -341,6 +367,20 @@ function nextRecord(){
  */
 function previousRecord(){
 	
+	// check position at end of foundset
+	if(foundset.getSelectedIndex() == 1){
+		return false;
+	}
+	
+	// check pre-move handler
+	if(!beforeMoveRecord()){
+		return false;
+	}
+	
+	// move selection
+	foundset.setSelectedIndex(foundset.getSelectedIndex() - 1 );
+	
+	return true;
 }
 
 /**
@@ -355,6 +395,28 @@ function firstRecord(){
  */
 function lastRecord(){
 	
+}
+
+/**
+ * @private 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"9A234C65-8A04-49D8-89D0-421BDDD02507"}
+ */
+function beforeMoveRecord(){
+	if(hasEdits()){
+		if(crudPolicies.getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING){
+			var userLeaveAction = onUserLeave();
+			if(userLeaveAction == scopes.svyCRUDManager.USER_LEAVE.BLOCK){
+				return false;
+			}
+			if(userLeaveAction == scopes.svyCRUDManager.USER_LEAVE.SAVE_EDITS){
+				return save();
+			} else {
+				return cancel();
+			}
+		}
+	}
+	return true;
 }
 
 /**
@@ -378,23 +440,77 @@ function onElementDataChange(oldValue, newValue, event) {
 	}
 
 	// track data change
-	if(crudScopePolicy == CRUD_SCOPE_POLICY.AUTO){
+	if(crudPolicies.getTransactionScopePolicy() == scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO){
 		trackDataChange(event);
 	}
+	
+	// Continuous validation
+	if(crudPolicies.getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS){
+		validate();
+		// TODO Consider returning false  to block data change ?
+	}
+	
+	// update UI
+	updateUI();
+	
 	return true;
 }
-
 /**
+ * Remove record from tracking
+ * 
  * TODO EXPERIMENTAL TEST ME
  * @private 
  * @param {JSRecord|Array<JSRecord>|JSFoundSet} records
+ * TODO Consider makeing protected
  *
+ * @properties={typeid:24,uuid:"A9352768-976A-402E-9F4B-5EC2B0A02378"}
+ */
+function untrack(records){
+	
+	//	Ignore if tracking not set 
+	if(crudPolicies.getTransactionScopePolicy() != scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO){
+		// TODO Log warning
+		return;
+	}
+	
+	// untrack foundset
+	if(records instanceof JSFoundSet){
+		/** @type {JSFoundSet} */
+		var fs = records;
+		untrack(databaseManager.getEditedRecords(fs));
+	
+	// untrack array of records
+	} else if(records instanceof Array){
+		for(var i in records){
+			untrack(records[i]);
+		}
+		
+	// untrack record
+	} else {
+		/** @type {JSRecord} */
+		var record = records;
+		var index = tracking.indexOf(record);
+		if(index == -1){
+			tracking.splice(index,1);
+			
+			//	TODO Fire special tracking event ?
+		}
+	}
+}
+
+/**
+ * Add records to tracking
+ * 
+ * TODO EXPERIMENTAL TEST ME
+ * @private 
+ * @param {JSRecord|Array<JSRecord>|JSFoundSet} records
+ * TODO Consider makeing protected
  * @properties={typeid:24,uuid:"40E46972-E802-43D9-AF07-B32B1B3DBF4E"}
  */
 function track(records){
 	
 	//	Ignore if tracking not set 
-	if(crudScopePolicy != CRUD_SCOPE_POLICY.AUTO){
+	if(crudPolicies.getTransactionScopePolicy() != scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO){
 		// TODO Log warning
 		return;
 	}
@@ -418,11 +534,18 @@ function track(records){
 		if(record.hasChangedData() && tracking.indexOf(record) == -1){
 			tracking.push(record);
 			
-			//	TODO Fire event
+			//	TODO Fire special tracking event ?
 		}
 	}
 }
 
+/**
+ * @private 
+ * @properties={typeid:24,uuid:"0B4A4D48-187A-4663-B435-922BABBC7259"}
+ */
+function clearTracking(){
+	tracking = [];
+}
 /**
  * TODO EXPERIMENTAL TEST ME
  * @private 
@@ -464,5 +587,132 @@ function trackDataChange(event){
 	// TODO un-named components not supported ?
 	} else {
 		
+	}
+}
+
+/**
+ * @protected
+ * @return {Array<scopes.svyValidationManager.ValidationMarker>}
+ * @properties={typeid:24,uuid:"21B623BA-8874-47FE-AC07-EE610C0A1C46"}
+ */
+function validate(){
+	
+	//	collect records to validate based on CRUD scope
+	var records = getEditedRecords()
+	
+	//	delegate to registered validators and collect markers
+	validationMarkers = [];
+	for(var i in records){
+		validationMarkers = validationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
+	}
+	
+	// update UI
+	updateUI();
+	
+	return validationMarkers;
+}
+
+/**
+ * @protected 
+ * @return {Array<JSRecord>}
+ * @properties={typeid:24,uuid:"B4E3A104-69D2-473B-9B87-EDECC5CA111A"}
+ */
+function getEditedRecords(){
+	//	collect records to validate based on CRUD scope
+	/** @type {Array<JSRecord>} */
+	var records = [];
+	switch (crudPolicies.getTransactionScopePolicy()) {
+		case scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.ALL:
+			records = databaseManager.getEditedRecords();
+			break;
+		case scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.FOUNDSET:
+			records = databaseManager.getEditedRecords(foundset)
+			break;
+		case scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.CURRENT_RECORD:
+			records = [foundset.getSelectedRecord()];
+			break;
+		case scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO:
+			for(var i in tracking){
+				if(tracking[i].hasChangedData()){
+					records.push(tracking[i]);
+				}
+			}
+			break;
+			
+		// shouldn't happen
+		default:
+			break;
+	}
+	return records;
+}
+
+/**
+ * @protected 
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"90B9D3C6-863E-471D-9A4F-189BC98402AA"}
+ */
+function beforeSave(){
+	return true;
+}
+
+/**
+ * @protected 
+ * @properties={typeid:24,uuid:"4A7F8CEA-9DF0-4FBE-98EE-17854331DDAE"}
+ */
+function afterSave(){
+	updateUI();
+}
+
+/**
+ * @protected 
+ * @param {scopes.svyDataUtils.SaveDataFailedException} error
+ * @properties={typeid:24,uuid:"24E8B121-4E3A-4465-B2D1-A32A5EAA8DF6"}
+ */
+function onSaveError(error){
+	updateUI();
+}
+/**
+ * TODO: Make defensive copy ?
+ * @protected 
+ * @return {Array<scopes.svyValidationManager.ValidationMarker>}
+ *
+ * @properties={typeid:24,uuid:"433FDF42-887B-4C39-A12A-A7AE3932C38B"}
+ */
+function getValidationMarkers(){
+	return validationMarkers;
+}
+
+/**
+ * @protected 
+ * @return {Array<scopes.svyValidationManager.ValidationMarker>}
+ * @properties={typeid:24,uuid:"1AC72AB8-8F20-4BA7-9FBF-BE403C079F9C"}
+ */
+function getErrors(){
+	var markers = [];
+	for(var i in validationMarkers){
+		if(validationMarkers[i].getLevel() == scopes.svyValidationManager.VALIDATION_LEVEL.ERROR){
+			markers.push(validationMarkers[i]);
+		}
+	}
+	return markers;
+}
+
+/**
+ * @protected 
+ * @param {JSEvent} event
+ * @override 
+ * @properties={typeid:24,uuid:"D7A776BE-7055-41F2-A00B-C041B0DDF4AD"}
+ */
+function onEventBubble(event){
+	switch (event.getType()) {
+		
+		case JSEvent.DATACHANGE:
+			if(getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS){
+				validate();
+			}
+		break;
+	
+		default:
+			break;
 	}
 }
