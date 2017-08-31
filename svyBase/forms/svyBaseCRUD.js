@@ -123,6 +123,14 @@ function deleteRecord(){
 		return false;
 	}
 	
+	// validate
+    if(crudPolicies.getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE){
+        canDelete();
+        if(hasErrors()){
+            return false;
+        }
+    }
+	
 	// check pre-delete handler(s)
 	if(!beforeDelete()){
 		return false;
@@ -603,7 +611,29 @@ function validate(){
 	//	delegate to registered validators and collect markers
 	validationMarkers = [];
 	for(var i in records){
-		validationMarkers = validationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
+    		validationMarkers = validationMarkers.concat(scopes.svyValidationManager.validate(records[i]));	        
+	}
+	
+	// update UI
+	updateUI();
+	
+	return validationMarkers;
+}
+
+/**
+ * @protected
+ * @return {Array<scopes.svyValidationManager.ValidationMarker>}
+ * @properties={typeid:24,uuid:"6DB99A4B-1130-4358-81BD-7C0ECE8D2DE5"}
+ */
+function canDelete(){
+	
+	//	collect records to validate based on CRUD scope
+	var records = getEditedRecords()
+	
+	//	delegate to registered validators and collect markers
+	validationMarkers = [];
+	for(var i in records){
+    		validationMarkers = validationMarkers.concat(scopes.svyValidationManager.canDelete(records[i]));	        
 	}
 	
 	// update UI
