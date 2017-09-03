@@ -513,7 +513,7 @@ function onElementDataChange(oldValue, newValue, event) {
 function untrack(records) {
 
     //	Ignore if tracking not set
-    if (getCrudPolicies().getTransactionScopePolicy() != scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO) {
+    if (getCrudPolicies().getBatchScopePolicy() != scopes.svyCRUDManager.BATCH_SCOPE_POLICY.AUTO) {
         // TODO Log warning
         return;
     }
@@ -555,7 +555,7 @@ function untrack(records) {
 function track(records) {
 
     //	Ignore if tracking not set
-    if (getCrudPolicies().getTransactionScopePolicy() != scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO) {
+    if (getCrudPolicies().getBatchScopePolicy() != scopes.svyCRUDManager.BATCH_SCOPE_POLICY.AUTO) {
         // TODO Log warning
         return;
     }
@@ -600,7 +600,7 @@ function clearTracking() {
 function trackDataChange(event) {
 
     //  Ignore if tracking not set
-    if (getCrudPolicies().getTransactionScopePolicy() != scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO) {
+    if (getCrudPolicies().getBatchScopePolicy() != scopes.svyCRUDManager.BATCH_SCOPE_POLICY.AUTO) {
         // TODO Log warning
         return;
     }
@@ -694,17 +694,17 @@ function getEditedRecords() {
     //	collect records to validate based on CRUD scope
     /** @type {Array<JSRecord>} */
     var records = [];
-    switch (getCrudPolicies().getTransactionScopePolicy()) {
-        case scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.ALL:
+    switch (getCrudPolicies().getBatchScopePolicy()) {
+        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.ALL:
             records = databaseManager.getEditedRecords();
             break;
-        case scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.FOUNDSET:
+        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.FOUNDSET:
             records = databaseManager.getEditedRecords(foundset)
             break;
-        case scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.CURRENT_RECORD:
+        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.CURRENT_RECORD:
             records = [foundset.getSelectedRecord()];
             break;
-        case scopes.svyCRUDManager.TRANSACTION_SCOPE_POLICY.AUTO:
+        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.AUTO:
             for (var i in m_Tracking) {
                 if (m_Tracking[i].hasChangedData()) {
                     records.push(m_Tracking[i]);

@@ -28,7 +28,7 @@
   * @enum 
   * @properties={typeid:35,uuid:"48721F72-EEBE-4288-B779-684813499BA5",variableType:-4}
   */
- var TRANSACTION_SCOPE_POLICY = {
+ var BATCH_SCOPE_POLICY = {
  	
  	ALL : 'all',
  	
@@ -129,7 +129,7 @@ function CRUDPolicies(){
 	 * @protected 
 	 * @type {String}
 	 */
-	this.transactionScopePolicy = TRANSACTION_SCOPE_POLICY.FOUNDSET;
+	this.batchScopePolicy = BATCH_SCOPE_POLICY.FOUNDSET;
 	
 	/**
 	 * @protected 
@@ -178,8 +178,8 @@ function CRUDPolicies(){
 	 * @param {String} policy
 	 * @return {CRUDPolicies}
 	 */
-	this.setTransactionScopePolicy = function(policy){
-		this.transactionScopePolicy = policy;
+	this.setBatchScopePolicy = function(policy){
+		this.batchScopePolicy = policy;
 		return this;
 	}
 	
@@ -187,8 +187,8 @@ function CRUDPolicies(){
 	 * @public 
 	 * @return {String}
 	 */
-	this.getTransactionScopePolicy = function(){
-		return this.transactionScopePolicy;
+	this.getBatchScopePolicy = function(){
+		return this.batchScopePolicy;
 	}
 	
 	/**
