@@ -85,35 +85,55 @@ function onUserLeave() {
 }
 
 /**
+ * @return {Boolean}
  * @properties={typeid:24,uuid:"53C0E0C1-925B-4A06-AA0A-0670456433D9"}
  */
 function newRecord() {
 
-    if (!beforeMoveRecord())
-    {
-        return;
+    if (!beforeMoveRecord()) {
+        return false;
     }
-    
-    // create record;
-    var newRecIndex = foundset.newRecord();
-    
-    // TODO: handler new record failed differently
-    if (newRecIndex == -1) {
-        throw 'New record failed';
+
+    // check pre handler(s)
+    if (!beforeDelete()) {
+        return false;
+    }
+
+    try {
+
+        // create record;
+        var newRecIndex = foundset.newRecord();
+
+        if (newRecIndex == -1) {
+            throw new scopes.svyDataUtils.NewRecordFailedException('New Record Failed', foundset);
+        }
+    } catch (e) {
+        // notify on-error
+        /** @type {scopes.svyDataUtils.NewRecordFailedException} */
+        var ex = e;
+        if (! (e instanceof scopes.svyDataUtils.NewRecordFailedException)) {
+            ex = new scopes.svyDataUtils.NewRecordFailedException('New Record Failed: ' + e.message, foundset);
+        }
+        onNewRecordError(ex);
+        updateUI();
+        return false;
     }
 
     // track record if tracking on
-    track(foundset.getRecord(newRecIndex));    
+    track(foundset.getRecord(newRecIndex));
+
+    afterNewRecord();
+
+    updateUI();
+
+    return true;
 }
 
 /**
- * TODO delete in transaction like FW
- * TODO remove from tracking
  * TODO Consider Locking
- * TODO Consider multi-selection
  * @properties={typeid:24,uuid:"38217020-D34E-413A-AE8E-9D53FD1F1C56"}
  */
-function deleteRecord() {
+function deleteSelectedRecords() {
 
     // records to delete
     var records = foundset.getSelectedRecords();
@@ -135,7 +155,7 @@ function deleteRecord() {
     }
 
     var usingLocalTransaction = !databaseManager.hasTransaction();
-    
+
     if (usingLocalTransaction) {
         // open transaction
         databaseManager.startTransaction();
@@ -160,10 +180,10 @@ function deleteRecord() {
             }
         }
 
-        if (usingLocalTransaction) {        
+        if (usingLocalTransaction) {
             // commit transaction
             if (!databaseManager.commitTransaction()) {
-    
+
                 // TODO consider adding transaction failed exception to svyDataUtils
                 throw new scopes.svyDataUtils.SvyDataException('Transaction Failed', foundset);
             }
@@ -185,15 +205,15 @@ function deleteRecord() {
         updateUI();
         return false;
     }
-    
+
     // remove from tracking
-    untrack(records);        
+    untrack(records);
 
     // post-delete handler
     afterDelete();
 
     updateUI();
-    
+
     return true;
 }
 
@@ -210,18 +230,36 @@ function beforeDelete() {
  * @protected
  * @properties={typeid:24,uuid:"23E38465-DFD5-41AD-AD15-D31ED60353E3"}
  */
-function afterDelete() {
-
-}
+function afterDelete() { }
 
 /**
  * @protected
  * @param {scopes.svyDataUtils.DeleteRecordFailedException} error
  * @properties={typeid:24,uuid:"0600B27F-F792-4191-BD57-9BA1AEE78601"}
  */
-function onDeleteError(error) {
+function onDeleteError(error) { }
 
+/**
+ * @protected
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"CD02C4FF-0269-477D-90B0-28DEC40EBCD6"}
+ */
+function beforeNewRecord() {
+    return true;
 }
+
+/**
+ * @protected
+ * @properties={typeid:24,uuid:"003D75DB-7973-4804-9F03-8FDEEA5A2C67"}
+ */
+function afterNewRecord() { }
+
+/**
+ * @protected
+ * @param {scopes.svyDataUtils.NewRecordFailedException} error
+ * @properties={typeid:24,uuid:"70BE571E-C17F-4E80-93AE-287FBE89DD2F"}
+ */
+function onNewRecordError(error) { }
 
 /**
  * TODO Consider ValidationException with markers passed to onSaveError(e)
@@ -251,9 +289,9 @@ function save() {
     }
 
     var usingLocalTransaction = !databaseManager.hasTransaction();
-    
+
     // begin transaction
-    if (usingLocalTransaction){
+    if (usingLocalTransaction) {
         databaseManager.startTransaction();
     }
     try {
@@ -269,8 +307,7 @@ function save() {
         }
 
         // commit transaction
-        if (usingLocalTransaction)
-        {
+        if (usingLocalTransaction) {
             if (!databaseManager.commitTransaction()) {
                 throw new scopes.svyDataUtils.SaveDataFailedException('Could not commit transaction', record);
             }
@@ -284,22 +321,22 @@ function save() {
         /** @type {scopes.svyDataUtils.SaveDataFailedException} */
         var ex = e;
         if (! (e instanceof scopes.svyDataUtils.SaveDataFailedException)) {
-            ex = new scopes.svyDataUtils.SaveDataFailedException('Save failed: ' + e.message);
+            ex = new scopes.svyDataUtils.SaveDataFailedException('Save Failed: ' + e.message);
         }
-        onSaveError(ex);        
-        updateUI();        
+        onSaveError(ex);
+        updateUI();
         return false;
     }
-    
+
     // clear validation markers
     m_ValidationMarkers = [];
 
     // clear tracked records
-    clearTracking();       
+    clearTracking();
 
     // post-save handler
     afterSave();
-    
+
     updateUI();
 
     return true;
@@ -340,13 +377,13 @@ function cancel() {
     m_ValidationMarkers = [];
 
     // clear tracking
-    clearTracking();    
+    clearTracking();
 
     // notify post-cancel handler
     afterCancel();
 
     updateUI();
-    
+
     return true;
 }
 
@@ -354,9 +391,7 @@ function cancel() {
  * @protected
  * @properties={typeid:24,uuid:"F2ECBD52-7DD1-4B30-945E-D4D707351BBA"}
  */
-function afterCancel() {
-
-}
+function afterCancel() { }
 
 /**
  * @return {Boolean}
@@ -408,7 +443,7 @@ function selectPreviousRecord() {
  */
 function selectFirstRecord() {
     // check position at end of foundset
-    if ((foundset.getSelectedIndex() == 1) || (foundset.getSize() == 0)) {
+    if ( (foundset.getSelectedIndex() == 1) || (foundset.getSize() == 0)) {
         return false;
     }
 
@@ -427,9 +462,9 @@ function selectFirstRecord() {
  * @return {Boolean}
  * @properties={typeid:24,uuid:"0E6051A2-DD95-4851-A02D-AA9AB9B1CF84"}
  */
-function selectLastRecord() { 
- // check position at end of foundset
-    if ((foundset.getSize() == 0) || (foundset.getSelectedIndex() == foundset.getSize())) {
+function selectLastRecord() {
+    // check position at end of foundset
+    if ( (foundset.getSize() == 0) || (foundset.getSelectedIndex() == foundset.getSize())) {
         return false;
     }
 
@@ -487,7 +522,7 @@ function onElementDataChange(oldValue, newValue, event) {
     }
 
     // track data change
-    trackDataChange(event);    
+    trackDataChange(event);
 
     // Continuous validation
     if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
@@ -604,7 +639,7 @@ function trackDataChange(event) {
         // TODO Log warning
         return;
     }
-    
+
     //	TODO Move functionality to svyUtils or svyBase to find relations, etc
     var name = event.getElementName();
     if (name) {
@@ -732,18 +767,14 @@ function beforeSave() {
  * @protected
  * @properties={typeid:24,uuid:"4A7F8CEA-9DF0-4FBE-98EE-17854331DDAE"}
  */
-function afterSave() {
-
-}
+function afterSave() { }
 
 /**
  * @protected
  * @param {scopes.svyDataUtils.SaveDataFailedException} error
  * @properties={typeid:24,uuid:"24E8B121-4E3A-4465-B2D1-A32A5EAA8DF6"}
  */
-function onSaveError(error) {
-    
-}
+function onSaveError(error) { }
 /**
  * TODO: Make defensive copy ?
  * @protected
@@ -807,10 +838,10 @@ function onRecordSelection(event) {
     if (hasEdits() && index != m_LastSelectedIndex) {
         if (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
             foundset.setSelectedIndex(m_LastSelectedIndex);
-            if (!beforeMoveRecord()) {                
-                return;                
+            if (!beforeMoveRecord()) {
+                return;
             }
-        }        
+        }
         foundset.setSelectedIndex(index);
     }
     m_LastSelectedIndex = index;
