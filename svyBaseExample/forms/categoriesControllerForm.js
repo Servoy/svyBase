@@ -66,7 +66,7 @@ function onDataChangePolicy(oldValue, newValue, event) {
     /** @type {RuntimeForm<categoriesBase>} */
     var lFrm = elements.splitPanel.getLeftForm();
     /** @type {RuntimeForm<categoriesBase>} */
-    var rFrm = elements.splitPanel.getLeftForm();
+    var rFrm = elements.splitPanel.getRightForm();
     setPolicies(lFrm.getCrudPolicies());
     setPolicies(rFrm.getCrudPolicies());
     return true;
