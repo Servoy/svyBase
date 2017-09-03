@@ -23,10 +23,10 @@
 //var propertyChangeSupport = new scopes.svyEventManager.PropertyChangeSupport(this);
 
 /**
- * @protected 
+ * @private  
  * @properties={typeid:35,uuid:"40C7FF71-D172-462F-8C39-0F373D0E9979",variableType:-4}
  */
-var actionMap = {};
+var m_ActionMap = {};
 
 /**
  * @public  
@@ -36,7 +36,7 @@ var actionMap = {};
  */
 function getAction(command){
 	/** @type {scopes.svyActionManager.FormAction} */
-	var action = actionMap[command];
+	var action = m_ActionMap[command];
 	return action;
 }
 
@@ -47,7 +47,7 @@ function getAction(command){
  */
 function getActionCommands(){
 	var commands = [];
-	for(var c in actionMap){
+	for(var c in m_ActionMap){
 		commands.push(c);
 	}
 	return commands.sort();
@@ -63,7 +63,7 @@ function getActionCommands(){
  */
 function addAction(command, handler, isToggle){
 	var action = new scopes.svyActionManager.FormAction(command,this,handler,isToggle);
-	actionMap[action.getActionCommand()] = action;
+	m_ActionMap[action.getActionCommand()] = action;
 	return action
 }
 
@@ -161,17 +161,25 @@ function updateUI(){
  * @param newValue new value
  * @param {JSEvent} event the event that triggered the action
  *
- * @return {Boolean}
+ * @return {Boolean|String}
  *
  * @protected
  *
  * @properties={typeid:24,uuid:"F0158F6D-AE28-45F9-BFF1-D50AB2504F28"}
  */
 function onElementDataChange(oldValue, newValue, event) {
-	
+	if (event) {
+        /** @type {RuntimeTextField} */
+        var field = event.getSource();
+    	if (field) {
+    	    var res = fieldValueChanged(field.getDataProviderID(), oldValue, newValue, event);
+    	    if ((res === false) || ((typeof res == 'string') && utils.stringTrim(res + '').length > 0)) {
+    	        return res;
+    	    }
+    	}
+	}
 	updateUI();
 	return bubble(event);
-//	return !fireEvent(EVENTS.ELEMENT_DATA_CHANGE,{oldValue:oldValue,newValue:newValue},true).isVetoed();
 }
 
 /**
@@ -184,6 +192,7 @@ function onElementDataChange(oldValue, newValue, event) {
  * @properties={typeid:24,uuid:"12647EBC-63BE-4361-A77F-C480D61D474F"}
  */
 function onRecordSelection(event) {
+    dataContextChanged();
 	updateUI();
 	bubble(event);
 }
@@ -199,6 +208,7 @@ function onRecordSelection(event) {
  * @properties={typeid:24,uuid:"3F55B248-8B06-4D1B-B662-CAEF7EF09DE5"}
  */
 function onShow(firstShow, event) {
+    displayingForm(firstShow);
 	updateUI();
 	bubble(event);
 }
@@ -245,7 +255,10 @@ function onElementFocusLost(event) {
  * @properties={typeid:24,uuid:"F2F39B1A-2DDC-4F8D-ACD4-20E8627AD397"}
  */
 function onHide(event) {
-	return bubble(event);
+    if (hidingForm()) {
+        return bubble(event);
+    }
+    return false;
 }
 
 /**
@@ -258,7 +271,7 @@ function onHide(event) {
  * @properties={typeid:24,uuid:"91BEB20C-902E-491D-820C-246EB85E8A51"}
  */
 function onLoad(event) {
-	
+	initializingForm();
 }
 
 /**
@@ -318,6 +331,7 @@ function onResize(event) {
  * @properties={typeid:24,uuid:"272A5E65-70D8-4779-BFE8-DBEB5CE0302B"}
  */
 function onUnload(event) {
+    uninitializingForm();
 	bubble(event);
 }
 
@@ -360,4 +374,98 @@ function bubble(event){
  */
 function onEventBubble(event){
 	return true;
+}
+
+/**
+ * This is a wrapper around the controller.loadRecords method (check its documentation for params info).
+ * It should be used instead of calling the form's controller directly to make sure that the form
+ * updates correctly the data context of any other forms hosted on it.
+ * @public
+ * @param {JSFoundSet} fs
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"95D933E7-A20E-484C-A6B3-65D0244EAEE8"}
+ */
+function setFoundSet(fs)
+{
+    if (foundset == fs) {
+        return true;
+    }
+    
+    var res = controller.loadRecords(fs);
+        
+    //invoke the notification to allow any extending forms to update their state using the new data context
+    dataContextChanged();
+    
+    //now refresh the UI
+    updateUI();
+    
+    return res;
+}
+
+/**
+ * Called when the form's foundset is replaced with a different one by a call to setFoundSet 
+ * or when the current record is changed with a different one (through selection, loading, etc.)
+ * Intended for usage by extending forms which need to react in some way to the data context change.
+ * @protected  
+ * @properties={typeid:24,uuid:"4152ECA4-2A42-43DF-B3EF-6202E65A164D"}
+ */
+function dataContextChanged(){
+    //intentionally left blank - extending form should override if they need to respond to data context changes (for example when the form's foundset is replaced from outside and this change needs to be propagated to any other forms hosted by this form)
+}
+
+/**
+ * Called as part of the custom onLoad event handling
+ * @protected 
+ * @properties={typeid:24,uuid:"D72EC127-A1AC-46CF-ACEF-895277876B68"}
+ */
+function initializingForm() {
+    //intentionally left blank - extending form should override if needed
+}
+
+/**
+ * Called as part of the custom onUnload event handling
+ * @protected 
+ * @properties={typeid:24,uuid:"E11F51C3-98DE-4E1E-857E-D0698A422F1C"}
+ */
+function uninitializingForm() {
+    //intentionally left blank - extending form should override if needed
+}
+
+/**
+ * Called as part of the custom onShow event handling
+ * @protected
+ * @param {Boolean} firstShow
+ * @properties={typeid:24,uuid:"6A5C9CDE-2D6D-482E-90E6-5FE74D3B977F"}
+ */
+function displayingForm(firstShow) {
+    //intentionally left blank - extending form should override if needed
+}
+
+/**
+ * Called as part of the custom onHide event handling
+ * @protected 
+ * @return {Boolean} true if can hide the form, otherwise false
+ * @properties={typeid:24,uuid:"3187DC11-97F2-4A21-95EC-4695B35FE306"}
+ */
+function hidingForm() {    
+    //extending form should override if needed
+    return true;
+}
+
+/**
+ * Handle changed data, return false if the value should not be accepted. 
+ * In NGClient you can return also a (i18n) string, instead of false, which will be shown as a tooltip.
+ *
+ * @protected
+ * @param {String} dataProviderName
+ * @param oldValue old value
+ * @param newValue new value
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @return {Boolean|String}
+ *
+ * @properties={typeid:24,uuid:"59067D6F-BFFD-4135-9BD0-0D088B1324E4"}
+ */
+function fieldValueChanged(dataProviderName, oldValue, newValue, event) {
+    return true;
 }

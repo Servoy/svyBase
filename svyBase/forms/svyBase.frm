@@ -1,5 +1,13 @@
 customProperties:"formComponent:false",
 encapsulation:60,
+items:[
+{
+height:10,
+partType:5,
+typeid:19,
+uuid:"D796BE0B-D81C-41A3-8741-A61426720C9C"
+}
+],
 name:"svyBase",
 onElementDataChangeMethodID:"F0158F6D-AE28-45F9-BFF1-D50AB2504F28",
 onElementFocusGainedMethodID:"435BD246-195F-468F-A231-91548DF1C0EC",
@@ -13,5 +21,6 @@ onResizeMethodID:"B8D10B13-AF0D-4068-80E4-D5E984C8986B",
 onShowMethodID:"3F55B248-8B06-4D1B-B662-CAEF7EF09DE5",
 onUnLoadMethodID:"272A5E65-70D8-4779-BFE8-DBEB5CE0302B",
 showInMenu:true,
+size:"10,10",
 typeid:3,
 uuid:"A067CBCF-1E4E-480A-9868-2AF5451921A1"
