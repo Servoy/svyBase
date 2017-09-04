@@ -44,6 +44,13 @@ var m_Tracking = [];
 var m_LastSelectedIndex = -1;
 
 /**
+ * @private
+ * @type {Array<String>}
+ * @properties={typeid:35,uuid:"3865FDE2-6E9E-4D77-B18E-CF624D567811",variableType:-4}
+ */
+var m_RecordLocks = [];
+
+/**
  * @public
  * @return {Boolean}
  * @properties={typeid:24,uuid:"6B9C30B7-28CF-404C-B37D-4624A163C070"}
@@ -167,8 +174,12 @@ function deleteSelectedRecords() {
             var record = records[i];
 
             // delete record
+            var lockName = null;
             try {
-
+                if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
+                    lockName = lockRecord(record);
+                }
+                
                 // handle unexpected error
                 if (!foundset.deleteRecord(record)) {
                     throw new scopes.svyDataUtils.DeleteRecordFailedException('Delete Record Failed: ' + record.exception, record);
@@ -177,7 +188,12 @@ function deleteSelectedRecords() {
                 // handle expected errors, i.e. DELETE_NOT_GRANTED
             } catch (e) {
                 throw new scopes.svyDataUtils.DeleteRecordFailedException(e.message, record);
+            } finally {
+                if (lockName) {
+                    releaseLock(lockName);
+                }
             }
+            
         }
 
         if (usingLocalTransaction) {
@@ -188,12 +204,13 @@ function deleteSelectedRecords() {
                 throw new scopes.svyDataUtils.SvyDataException('Transaction Failed', foundset);
             }
         }
-
+        releaseAllLocks();
         // handle error condition
     } catch (e) {
 
         // rollback transaction
         databaseManager.rollbackTransaction();
+        releaseAllLocks();
 
         // notify on-error
         /** @type {scopes.svyDataUtils.DeleteRecordFailedException} */
@@ -300,9 +317,22 @@ function save() {
         for (var i in records) {
             var record = records[i];
 
-            //	Save: handle failed save
-            if (!databaseManager.saveData(record)) {
-                throw new scopes.svyDataUtils.SaveDataFailedException('Save Failed', record);
+            try {
+                var lockName = null;
+                if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
+                    lockName = lockRecord(record);
+                }
+
+                //	Save: handle failed save
+                if (!databaseManager.saveData(record)) {
+                    throw new scopes.svyDataUtils.SaveDataFailedException('Save Failed', record);
+                }
+            } catch(ex) {
+                throw new scopes.svyDataUtils.SaveDataFailedException(ex.message, record);
+            } finally {
+                if (lockName) {
+                    releaseLock(lockName);
+                }
             }
         }
 
@@ -312,11 +342,13 @@ function save() {
                 throw new scopes.svyDataUtils.SaveDataFailedException('Could not commit transaction', record);
             }
         }
+        releaseAllLocks();
     } catch (e) {
 
         // rollback transaction
         databaseManager.rollbackTransaction();
-
+        releaseAllLocks();
+        
         // notify on-error
         /** @type {scopes.svyDataUtils.SaveDataFailedException} */
         var ex = e;
@@ -376,9 +408,11 @@ function cancel() {
     // clear validation markers
     m_ValidationMarkers = [];
 
+    releaseAllLocks();
+    
     // clear tracking
     clearTracking();
-
+    
     // notify post-cancel handler
     afterCancel();
 
@@ -846,4 +880,46 @@ function onRecordSelection(event) {
     }
     m_LastSelectedIndex = index;
     _super.onRecordSelection(event);
+}
+
+/**
+ * @protected
+ * @param {JSRecord} record
+ * @return {String} the lock name
+ *
+ * @properties={typeid:24,uuid:"311D6C10-E068-4615-AF72-53358A0A6873"}
+ */
+function lockRecord(record) {
+    var lockName = application.getUUID().toString();
+    //TODO: add automatic retry - for example, try 3 times to lock the record in 100ms intervals
+    var locked = databaseManager.acquireLock(record.foundset, record.foundset.getRecordIndex(record), lockName);
+    if (locked) {
+        m_RecordLocks.push(lockName);
+        return lockName;
+    }
+    throw new Error('Could not lock record');
+}
+
+/**
+ * @protected
+ * @properties={typeid:24,uuid:"1DA040A1-4A3D-4AB7-960B-44F632FE5CCA"}
+ */
+function releaseLock(lockName) {
+    var lockIndx = m_RecordLocks.indexOf(lockName);
+    if (lockIndx > -1) {
+        m_RecordLocks.splice(lockIndx,1);
+    }
+    databaseManager.releaseAllLocks(lockName);
+    
+}
+
+/**
+ * @protected
+ * @properties={typeid:24,uuid:"A8B701A0-EC80-45D9-A196-40CB3B81D463"}
+ */
+function releaseAllLocks() {
+    while (m_RecordLocks.length > 0) {
+        var lockName = m_RecordLocks.pop();
+        databaseManager.releaseAllLocks(lockName);
+    }
 }

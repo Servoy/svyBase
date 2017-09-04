@@ -85,6 +85,22 @@
  	 */
  	NONE : 'none'
  };
+ 
+ /**
+ * @properties={typeid:35,uuid:"000B774B-7367-4543-95C4-EB58BA935919",variableType:-4}
+ */
+var RECORD_LOCKING_POLICY = {
+    /**
+     * Records will be automatically locked before each save or delete operation (in essence, this is optimistic locking at the very last moment)
+     * @type {String}
+     */
+    AUTO : 'auto',
+    /**
+     * Records will not be locked
+     * @type {String}
+     */
+    NONE : 'none'
+}
 
  /**
   * @public  
@@ -124,6 +140,12 @@ function CRUDPolicies(){
 	 * @type {String}
 	 */
 	this.recordSelectionPolicy = RECORD_SELECTION_POLICY.ALLOW_WHEN_EDITING;
+	
+	/**
+	 * @protected 
+	 * @type {String}
+	 */
+	this.recordLockingPolicy = RECORD_LOCKING_POLICY.NONE;
 	
 	/**
 	 * @protected 
@@ -171,6 +193,24 @@ function CRUDPolicies(){
 	 */
 	this.getRecordSelectionPolicy = function(){
 		return this.recordSelectionPolicy;
+	}
+	
+	/**
+	 * @public 
+	 * @param {String} policy
+	 * @return {CRUDPolicies}
+	 */
+	this.setRecordLockingPolicy = function(policy){
+		this.recordLockingPolicy = policy;
+		return this;
+	}
+	
+	/**
+	 * @public 
+	 * @return {String}
+	 */
+	this.getRecordLockingPolicy = function(){
+		return this.recordLockingPolicy;
 	}
 	
 	/**
