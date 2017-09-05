@@ -13,6 +13,12 @@ var m_RecordSelectionPolicy = '';
 /**
  * @type {String}
  *
+ * @properties={typeid:35,uuid:"23AF5A45-B689-4132-A443-476161CA2EDF"}
+ */
+var m_RecordLockingPolicy = '';
+/**
+ * @type {String}
+ *
  * @properties={typeid:35,uuid:"FBF850F1-C258-48E2-879D-5CB9FA3BB41C"}
  */
 var m_ValidationPolicy = '';
@@ -35,6 +41,7 @@ function initializingForm() {
     m_FormHidePolicy = poli.getFormHidePolicy();
     m_BatchScopePolicy = poli.getBatchScopePolicy();
     m_RecordSelectionPolicy = poli.getRecordSelectionPolicy();
+    m_RecordLockingPolicy = poli.getRecordLockingPolicy();
     m_ValidationPolicy = poli.getValidationPolicy();
     
     //hook the inner forms to the same foundset as the "controller" form
@@ -81,6 +88,7 @@ function onDataChangePolicy(oldValue, newValue, event) {
 function setPolicies(policies) {
     policies.setFormHidePolicy(m_FormHidePolicy);
     policies.setRecordSelectionPolicy(m_RecordSelectionPolicy);
+    policies.setRecordLockingPolicy(m_RecordLockingPolicy);
     policies.setBatchScopePolicy(m_BatchScopePolicy);
     policies.setValidationPolicy(m_ValidationPolicy);
 }

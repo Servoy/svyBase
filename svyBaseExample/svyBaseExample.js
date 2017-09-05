@@ -10,6 +10,10 @@ function fillValueLists() {
     application.setValueListItems('vls_svyBaseExample_RecordSelectionPolicy',
         [selPoli.ALLOW_WHEN_EDITING, selPoli.PREVENT_WHEN_EDITING]);
     
+    var lockPoli = scopes.svyCRUDManager.RECORD_LOCKING_POLICY;
+    application.setValueListItems('vls_svyBaseExample_RecordLockingPolicy',
+        [lockPoli.AUTO, lockPoli.NONE]);
+    
     var batchPoli = scopes.svyCRUDManager.BATCH_SCOPE_POLICY;
     application.setValueListItems('vls_svyBaseExample_BatchScopePolicy',
         [batchPoli.ALL, batchPoli.FOUNDSET, batchPoli.CURRENT_RECORD, batchPoli.AUTO]);

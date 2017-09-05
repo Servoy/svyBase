@@ -1,6 +1,4 @@
 /*
- *	TODO Consider Locking
- *  TODO Consider multi-select-enabled foundsets
  *	TODO Consider optimistic save vs transactional
  *
  */
