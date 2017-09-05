@@ -3,15 +3,15 @@
  *
  *
  * @public
- * @param {String} command
- * @param {RuntimeForm<svyBase>} targetForm
+ * @param {String} name
+ * @param {RuntimeForm} targetForm
  * @param {String|Function} handler
  * @param {Boolean} [isToggle]
  * @constructor
  *
  * @properties={typeid:24,uuid:"6D033A0C-9772-4E19-8376-EE5C93CBFFEE"}
  */
-function FormAction(command, targetForm, handler, isToggle) {
+function FormAction(name, targetForm, handler, isToggle) {
 
     /**
      * @public
@@ -21,20 +21,21 @@ function FormAction(command, targetForm, handler, isToggle) {
         TEXT: 'text',
         TOOLTIP_TEXT: 'tooltipText',
         ENABLED: 'enabled',
+        VISIBLE: 'visible',
         SELECTED: 'selected'
     };
 
     /**
      * @protected
      */
-    this.properties = new scopes.svyCollections.Properties();
+    this.properties = { };
 
     /**
      * TODO prop change support should be on action itself
      * @protected
-     * @type {scopes.svyEventManager.PropertyChangeSupport}
+     * @type {scopes.svyPropertyChange.PropertyChangeSupport}
      */
-    this.propertyChangeSupport = new scopes.svyEventManager.PropertyChangeSupport(this);
+    this.propertyChangeSupport = new scopes.svyPropertyChange.PropertyChangeSupport(this);
 
     /**
      * @protected
@@ -46,8 +47,8 @@ function FormAction(command, targetForm, handler, isToggle) {
      * @public
      * @return {String}
      */
-    this.getActionCommand = function() {
-        return command;
+    this.getActionName = function() {
+        return name;
     }
 
     /**
@@ -87,8 +88,7 @@ function FormAction(command, targetForm, handler, isToggle) {
      * @return {FormAction}
      */
     this.setText = function(text) {
-        var oldValue = this.putProperty(this.PROPERTIES.TEXT, text);
-        this.propertyChangeSupport.fireEvent(this.PROPERTIES.TEXT, oldValue, text);
+        this.putProperty(this.PROPERTIES.TEXT, text);
         return this;
     }
 
@@ -108,8 +108,7 @@ function FormAction(command, targetForm, handler, isToggle) {
      * @return {FormAction}
      */
     this.setTooltipText = function(tooltipText) {
-        var oldValue = this.putProperty(this.PROPERTIES.TOOLTIP_TEXT, tooltipText);
-        this.propertyChangeSupport.fireEvent(this.PROPERTIES.TOOLTIP_TEXT, oldValue, tooltipText);
+        this.putProperty(this.PROPERTIES.TOOLTIP_TEXT, tooltipText);
         return this;
     }
 
@@ -129,8 +128,7 @@ function FormAction(command, targetForm, handler, isToggle) {
      * @return {FormAction}
      */
     this.setEnabled = function(enabled) {
-        var oldValue = this.putProperty(this.PROPERTIES.ENABLED, enabled);
-        this.propertyChangeSupport.fireEvent(this.PROPERTIES.ENABLED, oldValue, enabled);
+        this.putProperty(this.PROPERTIES.ENABLED, enabled);
         return this;
     }
 
@@ -146,12 +144,31 @@ function FormAction(command, targetForm, handler, isToggle) {
 
     /**
      * @public
+     * @param {Boolean} visible
+     * @return {FormAction}
+     */
+    this.setVisible = function(visible) {
+        this.putProperty(this.PROPERTIES.VISIBLE, visible);
+        return this;
+    }
+
+    /**
+     * @public
+     * @return {Boolean}
+     */
+    this.isVisible = function() {
+        /** @type {Boolean} */
+        var value = this.getProperty(this.PROPERTIES.VISIBLE);
+        return value;
+    }
+
+    /**
+     * @public
      * @param {Boolean} selected
      * @return {FormAction}
      */
     this.setSelected = function(selected) {
-        var oldValue = this.putProperty(this.PROPERTIES.SELECTED, selected);
-        this.propertyChangeSupport.fireEvent(this.PROPERTIES.SELECTED, oldValue, selected);
+        this.putProperty(this.PROPERTIES.SELECTED, selected);
         return this;
     }
 
@@ -176,7 +193,7 @@ function FormAction(command, targetForm, handler, isToggle) {
         }
 
         /** @type {Function} */
-        var event = new ActionEvent(command, targetForm, sourceEvent);
+        var event = new ActionEvent(name, targetForm, sourceEvent);
         try {
             scopes.svySystem.callMethod(this.getHandler(), event);
             if (this.isToggle) {
@@ -195,9 +212,13 @@ function FormAction(command, targetForm, handler, isToggle) {
      * @return {Boolean}
      */
     this.putProperty = function(propertyName, value) {
-        var oldValue = this.properties.put(propertyName, value);
-        this.propertyChangeSupport.fireEvent(propertyName, oldValue, value);
-        return oldValue != value;
+        var oldValue = this.getProperty(propertyName);
+        this.properties[propertyName] = value;
+        if (oldValue != value) {
+            this.propertyChangeSupport.fireEvent(propertyName, oldValue, value);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -206,20 +227,12 @@ function FormAction(command, targetForm, handler, isToggle) {
      * @return {Object}
      */
     this.getProperty = function(propertyName) {
-        return this.properties.get(propertyName);
+        return this.properties[propertyName];
     }
 
     /**
      * @public
-     * @return {scopes.svyCollections.Properties}
-     */
-    this.getProperties = function() {
-        return this.properties.clone();
-    }
-
-    /**
-     * @public
-     * @param {scopes.svyEventManager.PropertyChangeListener} listener
+     * @param {Function} listener
      * @param {String} [propertyName]
      */
     this.addPropertyChangeListener = function(listener, propertyName) {
@@ -228,7 +241,7 @@ function FormAction(command, targetForm, handler, isToggle) {
 
     /**
      * @public
-     * @param {scopes.svyEventManager.PropertyChangeListener} listener
+     * @param {Function} listener
      * @param {String} [propertyName]
      */
     this.removePropertyChangeListener = function(listener, propertyName) {

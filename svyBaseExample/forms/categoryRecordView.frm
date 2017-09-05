@@ -1,7 +1,7 @@
 customProperties:"formComponent:false",
 dataSource:"db:/example_data/categories",
 encapsulation:44,
-extendsID:"BC98FB44-E326-44B9-9BBB-E6DA66FC79E5",
+extendsID:"EA1B462D-6F4D-40C8-8AE8-BF90B3D94CAC",
 items:[
 {
 location:"124,21",
@@ -68,12 +68,6 @@ size:"140,20",
 text:"Description",
 typeid:4,
 uuid:"76FEB5FE-10C8-47CC-98CE-075B488D8557"
-},
-{
-extendsID:"D796BE0B-D81C-41A3-8741-A61426720C9C",
-height:207,
-typeid:19,
-uuid:"A921529A-6132-4623-BF4B-BD49B9CD76B2"
 },
 {
 height:314,

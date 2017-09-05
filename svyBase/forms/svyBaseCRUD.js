@@ -1,8 +1,3 @@
-/*
- *	TODO Consider optimistic save vs transactional
- *
- */
-
 /**
  * @private
  * @properties={typeid:35,uuid:"C86C5862-377B-417B-BD56-4843BE201DC0",variableType:-4}
@@ -35,11 +30,10 @@ var m_Tracking = [];
 
 /**
  * @private
- * @type {Number}
- *
- * @properties={typeid:35,uuid:"688994D3-628C-444B-BDD7-A0A1F410A876",variableType:4}
+ * @type {JSRecord}
+ * @properties={typeid:35,uuid:"F2378E77-3583-490A-AD73-602D91186937",variableType:-4}
  */
-var m_LastSelectedIndex = -1;
+var m_LastSelectedRecord = null;
 
 /**
  * @private
@@ -47,6 +41,22 @@ var m_LastSelectedIndex = -1;
  * @properties={typeid:35,uuid:"3865FDE2-6E9E-4D77-B18E-CF624D567811",variableType:-4}
  */
 var m_RecordLocks = [];
+
+/**
+ * @private 
+ * @type {Number}
+ *
+ * @properties={typeid:35,uuid:"D1EBFFC4-9B7D-46D8-86FB-3F30D697DF8C",variableType:4}
+ */
+var m_RecordLockRetries = 3;
+
+/**
+ * @private
+ * @type {Number}
+ *
+ * @properties={typeid:35,uuid:"D964F6E8-1808-4A13-8D42-9F0E6DBB0F24",variableType:4}
+ */
+var m_RecordLockRetryPeriodMilliseconds = 100;
 
 /**
  * @public
@@ -146,79 +156,79 @@ function deleteSelectedRecords() {
         return false;
     }
 
-    // validate
-    if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
-        canDelete();
-        if (hasErrors()) {
+    //lock
+    if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
+        if (!lockRecords(records)) {
             return false;
         }
     }
 
-    // check pre-delete handler(s)
-    if (!beforeDelete()) {
-        return false;
-    }
-
-    var usingLocalTransaction = !databaseManager.hasTransaction();
-
-    if (usingLocalTransaction) {
-        // open transaction
-        databaseManager.startTransaction();
-    }
     try {
 
-        // Delete selected records individually for better error handling
-        for (var i in records) {
-            var record = records[i];
-
-            // delete record
-            var lockName = null;
-            try {
-                if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
-                    lockName = lockRecord(record);
-                }
-                
-                // handle unexpected error
-                if (!foundset.deleteRecord(record)) {
-                    throw new scopes.svyDataUtils.DeleteRecordFailedException('Delete Record Failed: ' + record.exception, record);
-                }
-
-                // handle expected errors, i.e. DELETE_NOT_GRANTED
-            } catch (e) {
-                throw new scopes.svyDataUtils.DeleteRecordFailedException(e.message, record);
-            } finally {
-                if (lockName) {
-                    releaseLock(lockName);
-                }
+        // validate
+        if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
+            canDelete();
+            if (hasErrors()) {
+                return false;
             }
-            
         }
+
+        // check pre-delete handler(s)
+        if (!beforeDelete()) {
+            return false;
+        }
+
+        var usingLocalTransaction = !databaseManager.hasTransaction();
 
         if (usingLocalTransaction) {
-            // commit transaction
-            if (!databaseManager.commitTransaction()) {
+            // open transaction
+            databaseManager.startTransaction();
+        }
+        try {
 
-                // TODO consider adding transaction failed exception to svyDataUtils
-                throw new scopes.svyDataUtils.SvyDataException('Transaction Failed', foundset);
+            // Delete selected records individually for better error handling
+            for (var i in records) {
+                var record = records[i];
+
+                // delete record
+                try {
+                    if (!foundset.deleteRecord(record)) {
+                        throw new scopes.svyDataUtils.DeleteRecordFailedException('Delete Record Failed: ' + record.exception, record);
+                    }
+
+                    // handle expected errors, i.e. DELETE_NOT_GRANTED
+                } catch (e) {
+                    throw new scopes.svyDataUtils.DeleteRecordFailedException(e.message, record);
+                }
             }
-        }
-        releaseAllLocks();
-        // handle error condition
-    } catch (e) {
 
-        // rollback transaction
-        databaseManager.rollbackTransaction();
-        releaseAllLocks();
+            if (usingLocalTransaction) {
+                // commit transaction
+                if (!databaseManager.commitTransaction()) {
 
-        // notify on-error
-        /** @type {scopes.svyDataUtils.DeleteRecordFailedException} */
-        var ex = e;
-        if (! (e instanceof scopes.svyDataUtils.DeleteRecordFailedException)) {
-            ex = new scopes.svyDataUtils.DeleteRecordFailedException('Delete failed: ' + e.message, foundset);
+                    // TODO consider adding transaction failed exception to svyDataUtils
+                    throw new scopes.svyDataUtils.SvyDataException('Transaction Failed', foundset);
+                }
+            }
+        } catch (e) {
+
+            // rollback transaction
+            databaseManager.rollbackTransaction();
+            //releasing locks as soon as possible instead of waiting for the finally block
+            releaseAllLocks();
+
+            // notify on-error
+            /** @type {scopes.svyDataUtils.DeleteRecordFailedException} */
+            var ex = e;
+            if (! (e instanceof scopes.svyDataUtils.DeleteRecordFailedException)) {
+                ex = new scopes.svyDataUtils.DeleteRecordFailedException('Delete failed: ' + e.message, foundset);
+            }
+            onDeleteError(ex);
+            updateUI();
+            return false;
         }
-        onDeleteError(ex);
-        updateUI();
-        return false;
+    } finally {
+        releaseAllLocks();
     }
 
     // remove from tracking
@@ -290,72 +300,72 @@ function save() {
         return false;
     }
 
-    // validate
-    if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
-        validate();
-        if (hasErrors()) {
+    if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
+        if (!lockRecords(records)) {
             return false;
         }
     }
 
-    // Call before-save handler(s)
-    if (!beforeSave()) {
-        return false;
-    }
-
-    var usingLocalTransaction = !databaseManager.hasTransaction();
-
-    // begin transaction
-    if (usingLocalTransaction) {
-        databaseManager.startTransaction();
-    }
     try {
-
-        // save records 1-by-1
-        for (var i in records) {
-            var record = records[i];
-
-            try {
-                var lockName = null;
-                if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
-                    lockName = lockRecord(record);
-                }
-
-                //	Save: handle failed save
-                if (!databaseManager.saveData(record)) {
-                    throw new scopes.svyDataUtils.SaveDataFailedException('Save Failed', record);
-                }
-            } catch(ex) {
-                throw new scopes.svyDataUtils.SaveDataFailedException(ex.message, record);
-            } finally {
-                if (lockName) {
-                    releaseLock(lockName);
-                }
+        // validate
+        if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
+            validate();
+            if (hasErrors()) {
+                return false;
             }
         }
 
-        // commit transaction
+        // Call before-save handler(s)
+        if (!beforeSave()) {
+            return false;
+        }
+
+        var usingLocalTransaction = !databaseManager.hasTransaction();
+
+        // begin transaction
         if (usingLocalTransaction) {
-            if (!databaseManager.commitTransaction()) {
-                throw new scopes.svyDataUtils.SaveDataFailedException('Could not commit transaction', record);
-            }
+            databaseManager.startTransaction();
         }
-        releaseAllLocks();
-    } catch (e) {
+        try {
 
-        // rollback transaction
-        databaseManager.rollbackTransaction();
-        releaseAllLocks();
-        
-        // notify on-error
-        /** @type {scopes.svyDataUtils.SaveDataFailedException} */
-        var ex = e;
-        if (! (e instanceof scopes.svyDataUtils.SaveDataFailedException)) {
-            ex = new scopes.svyDataUtils.SaveDataFailedException('Save Failed: ' + e.message);
+            // save records 1-by-1
+            for (var i in records) {
+                var record = records[i];
+
+                try {
+                    if (!databaseManager.saveData(record)) {
+                        throw new scopes.svyDataUtils.SaveDataFailedException('Save Failed', record);
+                    }
+                } catch (ex) {
+                    throw new scopes.svyDataUtils.SaveDataFailedException(ex.message, record);
+                }
+            }
+
+            // commit transaction
+            if (usingLocalTransaction) {
+                if (!databaseManager.commitTransaction()) {
+                    throw new scopes.svyDataUtils.SaveDataFailedException('Could not commit transaction', record);
+                }
+            }
+        } catch (e) {
+
+            // rollback transaction
+            databaseManager.rollbackTransaction();
+            //on error releasing all locks as soon as possible instead of waiting for the finally block
+            releaseAllLocks();
+
+            // notify on-error
+            /** @type {scopes.svyDataUtils.SaveDataFailedException} */
+            var ex = e;
+            if (! (e instanceof scopes.svyDataUtils.SaveDataFailedException)) {
+                ex = new scopes.svyDataUtils.SaveDataFailedException('Save Failed: ' + e.message);
+            }
+            onSaveError(ex);
+            updateUI();
+            return false;
         }
-        onSaveError(ex);
-        updateUI();
-        return false;
+    } finally {
+        releaseAllLocks();
     }
 
     // clear validation markers
@@ -407,10 +417,10 @@ function cancel() {
     m_ValidationMarkers = [];
 
     releaseAllLocks();
-    
+
     // clear tracking
     clearTracking();
-    
+
     // notify post-cancel handler
     afterCancel();
 
@@ -761,27 +771,33 @@ function getEditedRecords() {
     //	collect records to validate based on CRUD scope
     /** @type {Array<JSRecord>} */
     var records = [];
-    switch (getCrudPolicies().getBatchScopePolicy()) {
-        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.ALL:
+    var poli = getCrudPolicies().getBatchScopePolicy();
+    switch (poli) {
+        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.ALL: {
             records = databaseManager.getEditedRecords();
             break;
-        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.FOUNDSET:
+        }
+        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.FOUNDSET: {
             records = databaseManager.getEditedRecords(foundset)
             break;
-        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.CURRENT_RECORD:
+        }
+        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.CURRENT_RECORD: {
             records = [foundset.getSelectedRecord()];
             break;
-        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.AUTO:
+        }
+        case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.AUTO: {
             for (var i in m_Tracking) {
-                if (m_Tracking[i].hasChangedData()) {
+                if (m_Tracking[i].hasChangedData() || m_Tracking[i].isNew()) {
                     records.push(m_Tracking[i]);
                 }
             }
             break;
+        }
 
         // shouldn't happen
-        default:
-            break;
+        default: {
+            throw new Error(utils.stringFormat('Unknown Batch Scope Policy', [poli]));
+        }
     }
     return records;
 }
@@ -807,6 +823,7 @@ function afterSave() { }
  * @properties={typeid:24,uuid:"24E8B121-4E3A-4465-B2D1-A32A5EAA8DF6"}
  */
 function onSaveError(error) { }
+
 /**
  * TODO: Make defensive copy ?
  * @protected
@@ -842,14 +859,12 @@ function getErrors() {
 function onEventBubble(event) {
     switch (event.getType()) {
 
-        case JSEvent.DATACHANGE:
+        case JSEvent.DATACHANGE: {
             if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
                 validate();
             }
             break;
-
-        default:
-            break;
+        }
     }
 }
 
@@ -863,20 +878,23 @@ function onEventBubble(event) {
  * @properties={typeid:24,uuid:"B9F1DFF9-3FD9-4E82-BEDE-7697186855BD"}
  */
 function onRecordSelection(event) {
-    var index = foundset.getSelectedIndex();
-    if (!index) {
-        return;
-    }
-    if (hasEdits() && index != m_LastSelectedIndex) {
+    var selRec = foundset.getSelectedRecord();
+
+    if (hasEdits() && (selRec != m_LastSelectedRecord)) {
         if (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
-            foundset.setSelectedIndex(m_LastSelectedIndex);
+            if (m_LastSelectedRecord && (m_LastSelectedRecord.foundset != foundset)) {
+                throw new Error('Invalid form state - the foundset of the form was replaced with a different foundset while there were pending changes and the record selection policy does not allow record selection changes when editing records.');
+            }
+
+            foundset.setSelectedIndex(foundset.getRecordIndex(m_LastSelectedRecord));
             if (!beforeMoveRecord()) {
                 return;
             }
         }
-        foundset.setSelectedIndex(index);
+        foundset.setSelectedIndex(foundset.getRecordIndex(selRec));
     }
-    m_LastSelectedIndex = index;
+
+    m_LastSelectedRecord = selRec;
     _super.onRecordSelection(event);
 }
 
@@ -884,18 +902,43 @@ function onRecordSelection(event) {
  * @protected
  * @param {JSRecord} record
  * @return {String} the lock name
- *
+ * @throws {Error} if could not lock the record
  * @properties={typeid:24,uuid:"311D6C10-E068-4615-AF72-53358A0A6873"}
  */
 function lockRecord(record) {
     var lockName = application.getUUID().toString();
-    //TODO: add automatic retry - for example, try 3 times to lock the record in 100ms intervals
-    var locked = databaseManager.acquireLock(record.foundset, record.foundset.getRecordIndex(record), lockName);
-    if (locked) {
-        m_RecordLocks.push(lockName);
-        return lockName;
+    //using automatic retry to acquire record lock - for example, try 3 times to lock the record in 100ms intervals
+    for (var i = 0; i < m_RecordLockRetries; i++) {
+        var locked = databaseManager.acquireLock(record.foundset, record.foundset.getRecordIndex(record), lockName);
+        if (locked) {
+            m_RecordLocks.push(lockName);
+            return lockName;
+        }
+        application.sleep(m_RecordLockRetryPeriodMilliseconds);
     }
-    throw new Error('Could not lock record');
+    throw new Error('Could not acquire record lock.');
+}
+
+/**
+ * @protected
+ * @param {Array<JSRecord>} records
+ * @return {Boolean} false if could not lock one of the records (will add a validation error marker for it)
+ * @properties={typeid:24,uuid:"68681782-449B-41C9-887D-4A211EE813D3"}
+ */
+function lockRecords(records) {
+    if (records) {
+        for (var i in records) {
+            var rec = records[i];
+            try {
+                lockRecord(rec);
+            } catch (e) {
+                releaseAllLocks();
+                m_ValidationMarkers.push(new scopes.svyValidationManager.ValidationMarker(rec, e.message, scopes.svyValidationManager.VALIDATION_LEVEL.ERROR));
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 /**
@@ -905,10 +948,10 @@ function lockRecord(record) {
 function releaseLock(lockName) {
     var lockIndx = m_RecordLocks.indexOf(lockName);
     if (lockIndx > -1) {
-        m_RecordLocks.splice(lockIndx,1);
+        m_RecordLocks.splice(lockIndx, 1);
     }
     databaseManager.releaseAllLocks(lockName);
-    
+
 }
 
 /**
@@ -919,5 +962,36 @@ function releaseAllLocks() {
     while (m_RecordLocks.length > 0) {
         var lockName = m_RecordLocks.pop();
         databaseManager.releaseAllLocks(lockName);
+    }
+}
+
+/**
+ * @protected 
+ * @param {Number} retryCount
+ *
+ * @properties={typeid:24,uuid:"4119C5BD-4B66-48A0-B63D-A538DB71D52D"}
+ */
+function setRecordLockRetries(retryCount){
+    if (retryCount > 1) {
+        m_RecordLockRetries = retryCount;
+    }
+    else {
+        //should try at least once to acquire record lock
+        m_RecordLockRetries = 1;
+    }
+}
+
+/**
+ * @protected 
+ * @param {Number} milliseconds
+ *
+ * @properties={typeid:24,uuid:"0F5BBC7A-A488-4874-8AF3-739483F94E06"}
+ */
+function setRecordLockRetryPeriod(milliseconds){
+    if (milliseconds > 0) {
+        m_RecordLockRetryPeriodMilliseconds = milliseconds;
+    }
+    else {
+        m_RecordLockRetryPeriodMilliseconds = 0;
     }
 }

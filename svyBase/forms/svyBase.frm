@@ -1,13 +1,5 @@
 customProperties:"formComponent:false",
 encapsulation:60,
-items:[
-{
-height:10,
-partType:5,
-typeid:19,
-uuid:"D796BE0B-D81C-41A3-8741-A61426720C9C"
-}
-],
 name:"svyBase",
 onElementDataChangeMethodID:"F0158F6D-AE28-45F9-BFF1-D50AB2504F28",
 onElementFocusGainedMethodID:"435BD246-195F-468F-A231-91548DF1C0EC",

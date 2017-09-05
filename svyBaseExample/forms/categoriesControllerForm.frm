@@ -1,6 +1,6 @@
 customProperties:"formComponent:false",
 dataSource:"db:/example_data/categories",
-extendsID:"BC98FB44-E326-44B9-9BBB-E6DA66FC79E5",
+extendsID:"EA1B462D-6F4D-40C8-8AE8-BF90B3D94CAC",
 items:[
 {
 dataProviderID:"m_ValidationPolicy",
@@ -94,6 +94,12 @@ uuid:"7AEE75FF-2584-4152-BD8E-B7F1FC39E51E",
 valuelistID:"6880A24B-DC9E-4409-86E4-51CF9AC69F6F"
 },
 {
+height:390,
+partType:5,
+typeid:19,
+uuid:"84F2954E-174B-4895-9BDB-5C101F6CEC7C"
+},
+{
 labelFor:"fldFormHidePolicy",
 location:"11,44",
 name:"lblFormHidePolicy",
@@ -110,12 +116,6 @@ size:"146,26",
 text:"Batch Scope",
 typeid:7,
 uuid:"93E374F9-7615-4EBD-9DF7-5EBEFE5FE4BA"
-},
-{
-extendsID:"D796BE0B-D81C-41A3-8741-A61426720C9C",
-height:388,
-typeid:19,
-uuid:"AB7A1A9A-99B7-45DC-9600-042EF2B714AD"
 }
 ],
 name:"categoriesControllerForm",
