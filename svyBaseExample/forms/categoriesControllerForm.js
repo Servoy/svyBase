@@ -30,28 +30,99 @@ var m_ValidationPolicy = '';
 var m_FormHidePolicy = '';
 
 /**
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"52C4034E-8F4F-44AF-8EEC-592AFE98BB62"}
+ */
+var DESIGNTIME_PROP_ACTION_NAME = 'action-name';
+
+/**
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"AA7DFD5B-D369-41C1-B79C-EB57B982BF8F"}
+ */
+var ACTION_LOAD_DATA = 'load-data';
+
+/**
+ * @properties={typeid:35,uuid:"1434E37C-1D75-4BF1-BDC0-AFE9D0ADDB65",variableType:-4}
+ */
+var m_ButtonActionMap = { };
+
+/**
  * Callback method when form is (re)loaded.
- * @override 
+ * @override
  * @protected
  *
  * @properties={typeid:24,uuid:"3A603570-3643-435E-B3F2-2FAE38F6BA7D"}
  */
 function initializingForm() {
+    addCustomActions();
+
+    buildToolbar();
+
     var poli = getCrudPolicies();
     m_FormHidePolicy = poli.getFormHidePolicy();
     m_BatchScopePolicy = poli.getBatchScopePolicy();
     m_RecordSelectionPolicy = poli.getRecordSelectionPolicy();
     m_RecordLockingPolicy = poli.getRecordLockingPolicy();
     m_ValidationPolicy = poli.getValidationPolicy();
-    
+
     //hook the inner forms to the same foundset as the "controller" form
     forms.categoriesList.setFoundSet(foundset);
     forms.categoryRecordView.setFoundSet(foundset);
-    
+
     elements.splitPanel.dividerLocation = 0.2;
     elements.splitPanel.setLeftForm(forms.categoriesList);
     elements.splitPanel.setRightForm(forms.categoryRecordView);
 }
+
+/**
+ * @private
+ * @properties={typeid:24,uuid:"0C862D37-2AE3-4EA7-BFE5-21CFD92DFDD7"}
+ */
+function addCustomActions() {
+    var action = addAction(ACTION_LOAD_DATA, loadData);
+    action.setText('Load');
+    action.setTooltipText('Load all available records');
+    action.setVisible(true);
+    action.setEnabled(true);
+}
+
+/**
+ * @private
+ * @properties={typeid:24,uuid:"27BDBC4A-BB84-4BCE-8C07-92A91B3A1D53"}
+ */
+function buildToolbar() {
+    //build a "toolbar"
+    var map = { };
+    var actionNames = getActionNames();
+    var jsFrm = solutionModel.getForm(controller.getName());
+    var btnWidth = 85;
+    var btnActionMthd = jsFrm.getMethod('onActionToolbarButton');
+    var toolbarPlaceholder = jsFrm.getLabel('lblToolbarPlaceholder');
+    var yPos = toolbarPlaceholder.y;
+    var xPos = toolbarPlaceholder.x;
+    for (var i = 0; i < actionNames.length; i++) {
+        var actionName = actionNames[i];
+        var action = getAction(actionName);
+        var btn = jsFrm.newButton(action.getText(), xPos, yPos, btnWidth, 30, btnActionMthd);
+        btn.name = 'toolbarBtn' + (i + 1);
+        btn.toolTipText = action.getTooltipText();
+        btn.putDesignTimeProperty(DESIGNTIME_PROP_ACTION_NAME, actionName);
+        btn.styleClass = 'toolbar-btn';
+        xPos += btnWidth;
+        if (i < actionNames.length - 1) {
+            xPos += 5;
+        }
+        map[actionName] = btn.name;
+        m_ButtonActionMap[actionName] = btn.name;
+    }
+    if (jsFrm.width < xPos) {
+        jsFrm.width = xPos + 2;
+    }
+    controller.recreateUI();
+}
+
 /**
  * Handle changed data, return false if the value should not be accepted. In NGClient you can return also a (i18n) string, instead of false, which will be shown as a tooltip.
  *
@@ -68,7 +139,7 @@ function initializingForm() {
 function onDataChangePolicy(oldValue, newValue, event) {
     var poli = getCrudPolicies();
     setPolicies(poli);
-    
+
     //propagate the policy change to the contained forms
     /** @type {RuntimeForm<categoriesBase>} */
     var lFrm = elements.splitPanel.getLeftForm();
@@ -76,11 +147,12 @@ function onDataChangePolicy(oldValue, newValue, event) {
     var rFrm = elements.splitPanel.getRightForm();
     setPolicies(lFrm.getCrudPolicies());
     setPolicies(rFrm.getCrudPolicies());
+    updateUI();
     return true;
 }
 
 /**
- * @private 
+ * @private
  * @param {scopes.svyCRUDManager.CRUDPolicies} policies
  *
  * @properties={typeid:24,uuid:"09EC67E4-50C0-4F1B-84AF-625F5D1E55BF"}
@@ -94,25 +166,65 @@ function setPolicies(policies) {
 }
 
 /**
- * @protected 
+ * @override
+ * @protected
  * @properties={typeid:24,uuid:"A082A2C4-8307-4E3C-8278-C08229B23CBD"}
  */
-function updateUI(){
+function updatingUI() {
     var markers = getValidationMarkers();
-    for(var i in markers){
+    for (var i in markers) {
         switch (markers[i].getLevel()) {
             case scopes.svyValidationManager.VALIDATION_LEVEL.INFO: {
-                plugins.webnotificationsToastr.info(markers[i].getMessage(), 'Validation Information');                
+                plugins.webnotificationsToastr.info(markers[i].getMessage(), 'Validation Information');
                 break;
             }
             case scopes.svyValidationManager.VALIDATION_LEVEL.WARN: {
-                plugins.webnotificationsToastr.warning(markers[i].getMessage(), 'Validation Warning');                
-                break;
-            }        
-            default: {
-                plugins.webnotificationsToastr.error(markers[i].getMessage(), 'Validation Error');                
+                plugins.webnotificationsToastr.warning(markers[i].getMessage(), 'Validation Warning');
                 break;
             }
-        } 
-    }    
+            default: {
+                plugins.webnotificationsToastr.error(markers[i].getMessage(), 'Validation Error');
+                break;
+            }
+        }
+    }
+
+    //update the state of custom actions
+    var action = getAction(ACTION_LOAD_DATA);
+    action.setEnabled(!hasEdits());
+
+    //sync buttons and actions state
+    var actionNames = getActionNames();
+    for (var n in actionNames) {
+        var actionName = actionNames[n];
+        action = getAction(actionName);
+        /** @type {RuntimeButton} */
+        var btn = elements[m_ButtonActionMap[actionName]];
+        btn.enabled = action.isEnabled();
+        btn.visible = action.isVisible();
+    }
+}
+/**
+ * Perform the element default action.
+ *
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"FF88AA02-A953-483F-95B3-C62FC9782753"}
+ */
+function onActionToolbarButton(event) {
+    /** @type {RuntimeButton} */
+    var btn = event.getSource();
+    var actionName = btn.getDesignTimeProperty(DESIGNTIME_PROP_ACTION_NAME);
+    var action = getAction(actionName);
+    action.invoke(event);
+}
+
+/**
+ * @protected
+ * @properties={typeid:24,uuid:"3138BADC-5837-464F-9289-9D853DB45D78"}
+ */
+function loadData() {
+    foundset.loadAllRecords();
 }

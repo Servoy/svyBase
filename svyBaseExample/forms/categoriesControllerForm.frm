@@ -46,9 +46,9 @@ uuid:"4EB51298-A4B2-47C2-88DD-04879E26E261"
 },
 {
 anchors:15,
-location:"3,174",
+location:"3,203",
 name:"splitPanel",
-size:"672,212",
+size:"672,183",
 tabOrientation:-2,
 typeid:16,
 uuid:"501801A1-E6E6-48AA-B3DF-77A21B32E447"
@@ -81,6 +81,15 @@ size:"146,26",
 text:"Record Locking",
 typeid:7,
 uuid:"6A679C5A-F91C-4088-947A-BF559CE2A8D5"
+},
+{
+location:"3,169",
+name:"lblToolbarPlaceholder",
+size:"672,30",
+text:"Toolbar Placeholder",
+typeid:7,
+uuid:"6DBE2863-A433-4194-BB20-771E017303A1",
+visible:false
 },
 {
 dataProviderID:"m_RecordSelectionPolicy",

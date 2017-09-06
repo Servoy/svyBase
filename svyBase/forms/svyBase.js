@@ -35,7 +35,7 @@ function getActionNames() {
     for (var name in m_ActionMap) {
         names.push(name);
     }
-    return names.sort();
+    return names;
 }
 
 /**
@@ -57,7 +57,7 @@ function addAction(name, handler, isToggle) {
  * @properties={typeid:24,uuid:"F0266C36-3862-4956-BCB5-A81B97CD84CA"}
  */
 function updateUI() {
-    // placeholder for implementation forms
+    updatingUI();
 }
 
 /**
@@ -332,6 +332,15 @@ function displayingForm(firstShow) {
 function hidingForm() {
     //extending form should override if needed
     return true;
+}
+
+/**
+ * Called when the UI is being updated as part of the custom updateUI method.
+ * @protected
+ * @properties={typeid:24,uuid:"6B87BF9E-941A-4A5E-9D90-BADB651E8816"}
+ */
+function updatingUI() {
+    //intentionally left blank - extending form should override if needed
 }
 
 /**

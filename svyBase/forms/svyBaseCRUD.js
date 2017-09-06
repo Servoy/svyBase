@@ -1,4 +1,21 @@
 /**
+ * Used for the standard form action names
+ * @public
+ * @enum
+ * @properties={typeid:35,uuid:"2CE299C5-BC55-4FF8-A15C-4F463748E34F",variableType:-4}
+ */
+var FORM_ACTION_NAMES = {
+    NEW: 'svy-form-action-new',
+    SAVE: 'svy-form-action-save',
+    CANCEL: 'svy-form-action-cancel',
+    DELETE: 'svy-form-action-delete',
+    FIRST: 'svy-form-action-first',
+    PREVIOUS: 'svy-form-action-previous',
+    NEXT: 'svy-form-action-next',
+    LAST: 'svy-form-action-last'
+};
+
+/**
  * @private
  * @properties={typeid:35,uuid:"C86C5862-377B-417B-BD56-4843BE201DC0",variableType:-4}
  */
@@ -43,7 +60,7 @@ var m_LastSelectedRecord = null;
 var m_RecordLocks = [];
 
 /**
- * @private 
+ * @private
  * @type {Number}
  *
  * @properties={typeid:35,uuid:"D1EBFFC4-9B7D-46D8-86FB-3F30D697DF8C",variableType:4}
@@ -966,32 +983,119 @@ function releaseAllLocks() {
 }
 
 /**
- * @protected 
+ * @protected
  * @param {Number} retryCount
  *
  * @properties={typeid:24,uuid:"4119C5BD-4B66-48A0-B63D-A538DB71D52D"}
  */
-function setRecordLockRetries(retryCount){
+function setRecordLockRetries(retryCount) {
     if (retryCount > 1) {
         m_RecordLockRetries = retryCount;
-    }
-    else {
+    } else {
         //should try at least once to acquire record lock
         m_RecordLockRetries = 1;
     }
 }
 
 /**
- * @protected 
+ * @protected
  * @param {Number} milliseconds
  *
  * @properties={typeid:24,uuid:"0F5BBC7A-A488-4874-8AF3-739483F94E06"}
  */
-function setRecordLockRetryPeriod(milliseconds){
+function setRecordLockRetryPeriod(milliseconds) {
     if (milliseconds > 0) {
         m_RecordLockRetryPeriodMilliseconds = milliseconds;
-    }
-    else {
+    } else {
         m_RecordLockRetryPeriodMilliseconds = 0;
     }
+}
+
+/**
+ * Callback method when form is (re)loaded.
+ * @override
+ * @protected
+ * @param {JSEvent} event the event that triggered the action
+ *
+ *
+ * @properties={typeid:24,uuid:"A13066F8-44CB-47DA-BB61-E229CCFD6618"}
+ */
+function onLoad(event) {
+    addStandardFormActions();
+    _super.onLoad(event);
+}
+
+/**
+ * @protected
+ * @properties={typeid:24,uuid:"1CFD2AF3-C53C-453D-995C-9C36110C9EC6"}
+ */
+function addStandardFormActions() {
+    
+    /**
+     * @private 
+     * @param {String} name
+     * @param {Function} handler
+     * @param {String} text
+     * @param {String} tooltip
+     */
+    function innerAddAction(name, handler, text, tooltip) {
+        var action = addAction(name, handler);
+        action.setText(text);
+        action.setTooltipText(tooltip);
+        action.setVisible(true);
+    }
+    
+    innerAddAction(FORM_ACTION_NAMES.NEW, newRecord, 'New', 'Add new record');
+    innerAddAction(FORM_ACTION_NAMES.DELETE, deleteSelectedRecords, 'Delete', 'Delete selected record(s)');
+    innerAddAction(FORM_ACTION_NAMES.SAVE, save, 'Save', 'Save changes');
+    innerAddAction(FORM_ACTION_NAMES.CANCEL, cancel, 'Cancel', 'Cancel changes');
+    innerAddAction(FORM_ACTION_NAMES.FIRST, selectFirstRecord, 'First', 'Go to the first record');
+    innerAddAction(FORM_ACTION_NAMES.PREVIOUS, selectPreviousRecord, 'Previous', 'Go to the previous record');
+    innerAddAction(FORM_ACTION_NAMES.NEXT, selectNextRecord, 'Next', 'Go to the next record');
+    innerAddAction(FORM_ACTION_NAMES.LAST, selectLastRecord, 'Last', 'Go to the last record');
+}
+
+/**
+ * @protected
+ * @properties={typeid:24,uuid:"3BDDABA0-2874-4726-B41E-489421681734"}
+ */
+function updateStandardFormActionsState() {
+    var hasFS = (foundset != null);
+    var isInFind = (hasFS && foundset.isInFind());
+    var selectionIndex = 0;
+    var fsSize = 0;
+    if (hasFS) {
+        selectionIndex = foundset.getSelectedIndex();
+        fsSize = foundset.getSize();        
+    }
+    var hasRecordSelection = (hasFS && (selectionIndex > 0) && !isInFind);
+    var hasUnsavedChanges = hasEdits();
+    var canMoveWhenEditing = (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.ALLOW_WHEN_EDITING);
+    var canMove = (hasFS && !isInFind && (!hasUnsavedChanges || canMoveWhenEditing));
+    
+    function innerSetActionEnabled(name, enabled) {
+        var action = getAction(name);
+        if (action) {
+            action.setEnabled(enabled);
+        }
+    }
+    
+    innerSetActionEnabled(FORM_ACTION_NAMES.NEW, canMove);
+    innerSetActionEnabled(FORM_ACTION_NAMES.DELETE, (hasRecordSelection && canMove));
+    innerSetActionEnabled(FORM_ACTION_NAMES.SAVE, hasUnsavedChanges);
+    innerSetActionEnabled(FORM_ACTION_NAMES.CANCEL, hasUnsavedChanges);
+    innerSetActionEnabled(FORM_ACTION_NAMES.FIRST, (canMove && (selectionIndex > 1)));
+    innerSetActionEnabled(FORM_ACTION_NAMES.PREVIOUS, (canMove && (selectionIndex > 1)));
+    innerSetActionEnabled(FORM_ACTION_NAMES.NEXT, (canMove && (selectionIndex < fsSize)));
+    innerSetActionEnabled(FORM_ACTION_NAMES.LAST, (canMove && (selectionIndex < fsSize)));
+}
+
+/**
+ * @override
+ * @protected
+ * @properties={typeid:24,uuid:"E7BDC27B-EC43-47AE-A21A-1AEA9CCC7124"}
+ */
+function updateUI() {
+    updateStandardFormActionsState();
+    _super.updateUI();
 }

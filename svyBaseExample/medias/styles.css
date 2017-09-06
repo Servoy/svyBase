@@ -1,0 +1,13 @@
+.toolbar-btn {
+	background-color: blue;
+	color: white;
+	font-weight: bold;
+}
+.toolbar-btn:disabled {
+    background-color: silver;
+    color: black;
+}
+.toolbar-btn:hover {
+    background-color: orange;
+    color: black;
+}

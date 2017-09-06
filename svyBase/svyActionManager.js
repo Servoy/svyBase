@@ -75,7 +75,7 @@ function FormAction(name, targetForm, handler, isToggle) {
         if (handler instanceof Function) {
             /** @type {Function} */
             var method = handler;
-            return scopes.svySystem.convertServoyMethodToQualifiedName(method).split('.').pop()
+            return scopes.svySystem.convertServoyMethodToQualifiedName(method);
         }
         /** @type {String} */
         var methodName = ['forms', targetForm.controller.getName(), handler].join('.');
