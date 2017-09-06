@@ -44,6 +44,13 @@ var DESIGNTIME_PROP_ACTION_NAME = 'action-name';
 var ACTION_LOAD_DATA = 'load-data';
 
 /**
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"AFF375C4-8498-44F3-A77F-A9F00457C489"}
+ */
+var ACTION_SHOW_OPTIONS = 'show-options';
+
+/**
  * @properties={typeid:35,uuid:"1434E37C-1D75-4BF1-BDC0-AFE9D0ADDB65",variableType:-4}
  */
 var m_ButtonActionMap = { };
@@ -84,6 +91,12 @@ function addCustomActions() {
     var action = addAction(ACTION_LOAD_DATA, loadData);
     action.setText('Load');
     action.setTooltipText('Load all available records');
+    action.setVisible(true);
+    action.setEnabled(true);
+    
+    action = addAction(ACTION_SHOW_OPTIONS, showOptionsPopup);
+    action.setText('Options');
+    action.setTooltipText('Show options popup menu');
     action.setVisible(true);
     action.setEnabled(true);
 }
@@ -192,6 +205,8 @@ function updatingUI() {
     //update the state of custom actions
     var action = getAction(ACTION_LOAD_DATA);
     action.setEnabled(!hasEdits());
+    action = getAction(ACTION_SHOW_OPTIONS);
+    action.setEnabled(true);
 
     //sync buttons and actions state
     var actionNames = getActionNames();
@@ -227,4 +242,23 @@ function onActionToolbarButton(event) {
  */
 function loadData() {
     foundset.loadAllRecords();
+}
+
+/**
+ * 
+ * @param {scopes.svyActionManager.ActionEvent} event
+ *
+ * @properties={typeid:24,uuid:"91AF009F-395A-44F2-8EC7-38B0569A3235"}
+ */
+function showOptionsPopup(event) {
+    var popup = plugins.window.createPopupMenu();
+    popup.addMenuItem('Option 1');
+    popup.addMenuItem('Option 2');
+    popup.addMenuItem('Option 3');
+    popup.addSeparator();
+    popup.addMenuItem('Option 4');
+    popup.addMenuItem('Option 5');
+    
+    //extract the "wrapped" JSEvent to show the popup at the appropriate source UI component which visualizes the action
+    popup.show(event.getSourceEvent().getSource());
 }
