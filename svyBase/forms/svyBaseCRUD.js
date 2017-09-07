@@ -173,6 +173,10 @@ function deleteSelectedRecords() {
         return false;
     }
 
+    if (!confirmDelete(records)){
+        return false;
+    }
+    
     //lock
     if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
         if (!lockRecords(records)) {
@@ -184,7 +188,7 @@ function deleteSelectedRecords() {
 
         // validate
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
-            canDelete();
+            canDelete(records);
             if (hasErrors()) {
                 return false;
             }
@@ -758,15 +762,24 @@ function validate() {
 }
 
 /**
+ * @protected 
+ * @param {Array<JSRecord>} records
+ * @return {Boolean}
+ * @properties={typeid:24,uuid:"16BDEADF-D8B4-43D2-BF78-73455B0DF8A2"}
+ */
+function confirmDelete(records){
+    var confirmBtn = 'Delete';
+    var res = plugins.dialogs.showQuestionDialog('Confirm Delete', 'Do you want to delete the selected record(s)?<br>Note: There is no undo for this operation.', 'Cancel', confirmBtn);
+    return (res == confirmBtn);
+}
+
+/**
  * @protected
+ * @param {Array<JSRecord>} records
  * @return {Array<scopes.svyValidationManager.ValidationMarker>}
  * @properties={typeid:24,uuid:"6DB99A4B-1130-4358-81BD-7C0ECE8D2DE5"}
  */
-function canDelete() {
-
-    //	collect records to validate based on CRUD scope
-    var records = getEditedRecords()
-
+function canDelete(records) {    
     //	delegate to registered validators and collect markers
     m_ValidationMarkers = [];
     for (var i in records) {
