@@ -330,7 +330,7 @@ function save() {
     try {
         // validate
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
-            validate();
+            validate(records);
             if (hasErrors()) {
                 return false;
             }
@@ -589,7 +589,7 @@ function onElementDataChange(oldValue, newValue, event) {
 
     // Continuous validation
     if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
-        validate();
+        validate(getEditedRecords());
         // TODO Consider returning false  to block data change ?
     }
 
@@ -741,14 +741,11 @@ function trackDataChange(event) {
 
 /**
  * @protected
+ * @param {Array<JSRecord>} records
  * @return {Array<scopes.svyValidationManager.ValidationMarker>}
  * @properties={typeid:24,uuid:"21B623BA-8874-47FE-AC07-EE610C0A1C46"}
  */
-function validate() {
-
-    //	collect records to validate based on CRUD scope
-    var records = getEditedRecords()
-
+function validate(records) {    
     //	delegate to registered validators and collect markers
     m_ValidationMarkers = [];
     for (var i in records) {
@@ -891,7 +888,7 @@ function onEventBubble(event) {
 
         case JSEvent.DATACHANGE: {
             if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
-                validate();
+                validate(getEditedRecords());
             }
             break;
         }
