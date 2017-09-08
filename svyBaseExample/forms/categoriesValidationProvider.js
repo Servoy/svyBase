@@ -20,6 +20,18 @@ function validate(record){
 }
 
 /**
+ * Method to validate if the record can be deleted from the database.
+ * @override 
+ * @public 
+ * @param {JSRecord<db:/example_data/categories>} record The record to validate.
+ * @return {Array<scopes.svyValidationManager.ValidationMarker>} An empty array if the specified record can be deleted, otherwise an array with validation markers which contain information why the record cannot be deleted.
+ * @properties={typeid:24,uuid:"8FEDC475-E878-4A47-B113-6158786986BB"}
+ */
+function canDelete(record){
+    return [];
+}
+
+/**
  * @override 
  * @public 
  * @param {String} dataSource
