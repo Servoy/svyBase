@@ -151,14 +151,16 @@ function newRecord() {
         return false;
     }
 
-    // track record if tracking on
-    track(foundset.getRecord(newRecIndex));
+    try {
+        // track record if tracking on
+        track(foundset.getRecord(newRecIndex));
 
-    afterNewRecord();
+        afterNewRecord();
 
-    updateUI();
-
-    return true;
+        return true;
+    } finally {
+        updateUI();
+    }
 }
 
 /**
@@ -173,10 +175,10 @@ function deleteSelectedRecords() {
         return false;
     }
 
-    if (!confirmDelete(records)){
+    if (!confirmDelete(records)) {
         return false;
     }
-    
+
     //lock
     if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
         if (!lockRecords(records)) {
@@ -252,15 +254,17 @@ function deleteSelectedRecords() {
         releaseAllLocks();
     }
 
-    // remove from tracking
-    untrack(records);
+    try {
+        // remove from tracking
+        untrack(records);
 
-    // post-delete handler
-    afterDelete();
+        // post-delete handler
+        afterDelete();
 
-    updateUI();
-
-    return true;
+        return true;
+    } finally {
+        updateUI();
+    }
 }
 
 /**
@@ -392,15 +396,17 @@ function save() {
     // clear validation markers
     m_ValidationMarkers = [];
 
-    // clear tracked records
-    clearTracking();
+    try {
+        // clear tracked records
+        clearTracking();
 
-    // post-save handler
-    afterSave();
+        // post-save handler
+        afterSave();
 
-    updateUI();
-
-    return true;
+        return true;
+    } finally {
+        updateUI();
+    }
 }
 
 /**
@@ -423,31 +429,33 @@ function cancel() {
         return false;
     }
 
-    // check pre-cancel handler(s)
-    if (!beforeCancel()) {
-        return false;
+    try {
+        // check pre-cancel handler(s)
+        if (!beforeCancel()) {
+            return false;
+        }
+
+        // revert records 1-by-1
+        for (var i in records) {
+            var record = records[i];
+            record.revertChanges();
+        }
+
+        // clear validation markers
+        m_ValidationMarkers = [];
+
+        releaseAllLocks();
+
+        // clear tracking
+        clearTracking();
+
+        // notify post-cancel handler
+        afterCancel();
+
+        return true;
+    } finally {
+        updateUI();
     }
-
-    // revert records 1-by-1
-    for (var i in records) {
-        var record = records[i];
-        record.revertChanges();
-    }
-
-    // clear validation markers
-    m_ValidationMarkers = [];
-
-    releaseAllLocks();
-
-    // clear tracking
-    clearTracking();
-
-    // notify post-cancel handler
-    afterCancel();
-
-    updateUI();
-
-    return true;
 }
 
 /**
@@ -579,24 +587,25 @@ function beforeMoveRecord() {
  */
 function onElementDataChange(oldValue, newValue, event) {
 
-    //	Call super to see if vetoed
-    if (!_super.onElementDataChange(oldValue, newValue, event)) {
-        return false;
+    try {
+        //	Call super to see if vetoed
+        if (!_super.onElementDataChange(oldValue, newValue, event)) {
+            return false;
+        }
+
+        // track data change
+        trackDataChange(event);
+
+        // Continuous validation
+        if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
+            validate(getEditedRecords());
+            // TODO Consider returning false  to block data change ?
+        }
+
+        return true;
+    } finally {
+        updateUI();
     }
-
-    // track data change
-    trackDataChange(event);
-
-    // Continuous validation
-    if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
-        validate(getEditedRecords());
-        // TODO Consider returning false  to block data change ?
-    }
-
-    // update UI
-    updateUI();
-
-    return true;
 }
 /**
  * Remove record from tracking
@@ -745,26 +754,28 @@ function trackDataChange(event) {
  * @return {Array<scopes.svyValidationManager.ValidationMarker>}
  * @properties={typeid:24,uuid:"21B623BA-8874-47FE-AC07-EE610C0A1C46"}
  */
-function validate(records) {    
+function validate(records) {
     //	delegate to registered validators and collect markers
     m_ValidationMarkers = [];
-    for (var i in records) {
-        m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
+    try {
+        for (var i in records) {
+            m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
+        }
+    } finally {
+        // update UI
+        updateUI();
     }
-
-    // update UI
-    updateUI();
 
     return m_ValidationMarkers;
 }
 
 /**
- * @protected 
+ * @protected
  * @param {Array<JSRecord>} records
  * @return {Boolean}
  * @properties={typeid:24,uuid:"16BDEADF-D8B4-43D2-BF78-73455B0DF8A2"}
  */
-function confirmDelete(records){
+function confirmDelete(records) {
     var confirmBtn = 'Delete';
     var res = plugins.dialogs.showQuestionDialog('Confirm Delete', 'Do you want to delete the selected record(s)?<br>Note: There is no undo for this operation.', 'Cancel', confirmBtn);
     return (res == confirmBtn);
@@ -776,7 +787,7 @@ function confirmDelete(records){
  * @return {Array<scopes.svyValidationManager.ValidationMarker>}
  * @properties={typeid:24,uuid:"6DB99A4B-1130-4358-81BD-7C0ECE8D2DE5"}
  */
-function canDelete(records) {    
+function canDelete(records) {
     //	delegate to registered validators and collect markers
     m_ValidationMarkers = [];
     for (var i in records) {
@@ -878,17 +889,21 @@ function getErrors() {
 }
 
 /**
+ * @override
  * @protected
  * @param {JSEvent} event
- * @override
+ * @param {String} bubbleEventType one of the BUBBLE_EVENT_TYPES enum values
  * @properties={typeid:24,uuid:"D7A776BE-7055-41F2-A00B-C041B0DDF4AD"}
  */
-function onEventBubble(event) {
-    switch (event.getType()) {
+function onEventBubble(event, bubbleEventType) {
+    switch (bubbleEventType) {
 
-        case JSEvent.DATACHANGE: {
+        case BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE: {
             if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
+                //this will update the UI as well
                 validate(getEditedRecords());
+            } else {
+                updateUI();
             }
             break;
         }
@@ -907,9 +922,9 @@ function onEventBubble(event) {
 function onRecordSelection(event) {
     var selRec = foundset.getSelectedRecord();
 
-    if (hasEdits() && (selRec != m_LastSelectedRecord)) {
-        if (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
-            if (m_LastSelectedRecord && (m_LastSelectedRecord.foundset != foundset)) {
+    if (m_LastSelectedRecord && (selRec != m_LastSelectedRecord) && (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING)) {
+        if ( (hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew()))) {
+            if (m_LastSelectedRecord.foundset != foundset) {
                 throw new Error('Invalid form state - the foundset of the form was replaced with a different foundset while there were pending changes and the record selection policy does not allow record selection changes when editing records.');
             }
 
@@ -917,11 +932,14 @@ function onRecordSelection(event) {
             if (!beforeMoveRecord()) {
                 return;
             }
+            m_LastSelectedRecord = selRec;
+            if (selRec) {
+                foundset.setSelectedIndex(foundset.getRecordIndex(selRec));
+            }
         }
-        foundset.setSelectedIndex(foundset.getRecordIndex(selRec));
     }
-
     m_LastSelectedRecord = selRec;
+
     _super.onRecordSelection(event);
 }
 
@@ -1040,9 +1058,9 @@ function onLoad(event) {
  * @properties={typeid:24,uuid:"1CFD2AF3-C53C-453D-995C-9C36110C9EC6"}
  */
 function addStandardFormActions() {
-    
+
     /**
-     * @private 
+     * @private
      * @param {String} name
      * @param {Function} handler
      * @param {String} text
@@ -1054,7 +1072,7 @@ function addStandardFormActions() {
         action.setTooltipText(tooltip);
         action.setVisible(true);
     }
-    
+
     innerAddAction(FORM_ACTION_NAMES.NEW, newRecord, 'New', 'Add new record');
     innerAddAction(FORM_ACTION_NAMES.DELETE, deleteSelectedRecords, 'Delete', 'Delete selected record(s)');
     innerAddAction(FORM_ACTION_NAMES.SAVE, save, 'Save', 'Save changes');
@@ -1076,20 +1094,20 @@ function updateStandardFormActionsState() {
     var fsSize = 0;
     if (hasFS) {
         selectionIndex = foundset.getSelectedIndex();
-        fsSize = foundset.getSize();        
+        fsSize = foundset.getSize();
     }
     var hasRecordSelection = (hasFS && (selectionIndex > 0) && !isInFind);
     var hasUnsavedChanges = hasEdits();
     var canMoveWhenEditing = (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.ALLOW_WHEN_EDITING);
     var canMove = (hasFS && !isInFind && (!hasUnsavedChanges || canMoveWhenEditing));
-    
+
     function innerSetActionEnabled(name, enabled) {
         var action = getAction(name);
         if (action) {
             action.setEnabled(enabled);
         }
     }
-    
+
     innerSetActionEnabled(FORM_ACTION_NAMES.NEW, canMove);
     innerSetActionEnabled(FORM_ACTION_NAMES.DELETE, (hasRecordSelection && canMove));
     innerSetActionEnabled(FORM_ACTION_NAMES.SAVE, hasUnsavedChanges);

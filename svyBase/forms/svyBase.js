@@ -8,6 +8,25 @@
  */
 
 /**
+ * @public
+ * @enum
+ * @properties={typeid:35,uuid:"83F0808B-93F2-4697-AD3B-847D44D1705C",variableType:-4}
+ */
+var BUBBLE_EVENT_TYPES = {
+    FORM_SHOW: 'form-show',
+    FORM_HIDE: 'form-hide',
+    FORM_LOAD: 'form-load',
+    FORM_UNLOAD: 'form-unload',
+    FORM_RESIZE: 'form-resize',
+    RECORD_SELECT: 'record-select',
+    RECORD_EDIT_START: 'record-edit-start',
+    RECORD_EDIT_STOP: 'record-edit-stop',
+    ELEMENT_FOCUS_GAINED: 'element-focus-gained',
+    ELEMENT_FOCUS_LOST: 'element-focus-lost',
+    ELEMENT_DATA_CHANGE: 'element-data-change'
+}
+
+/**
  * @private
  * @properties={typeid:35,uuid:"40C7FF71-D172-462F-8C39-0F373D0E9979",variableType:-4}
  */
@@ -75,18 +94,21 @@ function updateUI() {
  * @properties={typeid:24,uuid:"F0158F6D-AE28-45F9-BFF1-D50AB2504F28"}
  */
 function onElementDataChange(oldValue, newValue, event) {
-    if (event) {
-        /** @type {RuntimeTextField} */
-        var field = event.getSource();
-        if (field) {
-            var res = fieldValueChanged(field.getDataProviderID(), oldValue, newValue, event);
-            if ( (res === false) || ( (typeof res == 'string') && utils.stringTrim(res + '').length > 0)) {
-                return res;
+    try {
+        if (event) {
+            /** @type {RuntimeTextField} */
+            var field = event.getSource();
+            if (field) {
+                var res = fieldValueChanged(field.getDataProviderID(), oldValue, newValue, event);
+                if ( (res === false) || ( (typeof res == 'string') && utils.stringTrim(res + '').length > 0)) {
+                    return res;
+                }
             }
         }
+    } finally {
+        updateUI();
     }
-    updateUI();
-    return bubble(event);
+    return bubble(event, BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
 }
 
 /**
@@ -99,9 +121,12 @@ function onElementDataChange(oldValue, newValue, event) {
  * @properties={typeid:24,uuid:"12647EBC-63BE-4361-A77F-C480D61D474F"}
  */
 function onRecordSelection(event) {
-    dataContextChanged();
-    updateUI();
-    bubble(event);
+    try {
+        dataContextChanged();
+    } finally {
+        updateUI();
+    }
+    bubble(event, BUBBLE_EVENT_TYPES.RECORD_SELECT);
 }
 
 /**
@@ -117,7 +142,7 @@ function onRecordSelection(event) {
 function onShow(firstShow, event) {
     displayingForm(firstShow);
     updateUI();
-    bubble(event);
+    bubble(event, BUBBLE_EVENT_TYPES.FORM_SHOW);
 }
 
 /**
@@ -132,7 +157,7 @@ function onShow(firstShow, event) {
  * @properties={typeid:24,uuid:"435BD246-195F-468F-A231-91548DF1C0EC"}
  */
 function onElementFocusGained(event) {
-    return bubble(event);
+    return bubble(event, BUBBLE_EVENT_TYPES.ELEMENT_FOCUS_GAINED);
 }
 
 /**
@@ -147,7 +172,7 @@ function onElementFocusGained(event) {
  * @properties={typeid:24,uuid:"1025D295-9A86-4D6E-8F14-2A5BE7317CEB"}
  */
 function onElementFocusLost(event) {
-    return bubble(event);
+    return bubble(event, BUBBLE_EVENT_TYPES.ELEMENT_FOCUS_LOST);
 }
 
 /**
@@ -163,7 +188,7 @@ function onElementFocusLost(event) {
  */
 function onHide(event) {
     if (hidingForm()) {
-        return bubble(event);
+        return bubble(event, BUBBLE_EVENT_TYPES.FORM_HIDE);
     }
     return false;
 }
@@ -194,7 +219,7 @@ function onLoad(event) {
  */
 function onRecordEditStart(event) {
     updateUI();
-    return bubble(event);
+    return bubble(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_START);
 }
 
 /**
@@ -211,7 +236,7 @@ function onRecordEditStart(event) {
  */
 function onRecordEditStop(record, event) {
     updateUI();
-    return bubble(event);
+    return bubble(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_STOP);
 }
 
 /**
@@ -225,7 +250,7 @@ function onRecordEditStop(record, event) {
  */
 function onResize(event) {
     updateUI();
-    bubble(event);
+    bubble(event, BUBBLE_EVENT_TYPES.FORM_RESIZE);
 }
 
 /**
@@ -239,7 +264,7 @@ function onResize(event) {
  */
 function onUnload(event) {
     uninitializingForm();
-    bubble(event);
+    bubble(event, BUBBLE_EVENT_TYPES.FORM_UNLOAD);
 }
 
 /**
@@ -247,26 +272,26 @@ function onUnload(event) {
  *
  * @private
  * @param {JSEvent} event
+ * @param {String} bubbleEventType one of the BUBBLE_EVENT_TYPES enum values
  * @return {Boolean}
  * @properties={typeid:24,uuid:"83976541-2B87-4AA1-8040-76D0D53EEAF4"}
  */
-function bubble(event) {
-
+function bubble(event, bubbleEventType) {
     // skip event bubble handler if THIS form is same as source
     if (event.getFormName() != controller.getName()) {
 
         // bubble handler / check if blocked
-        if (onEventBubble(event) === false) {
+        if (onEventBubble(event, bubbleEventType) === false) {
             return false;
         }
     }
 
     // bubble to parent form
     var parent = forms[scopes.svyUI.getParentFormName(this)];
-    if (parent && scopes.svyUI.isJSFormInstanceOf(parent, forms.svyBase)) {
-        /** @type {{bubble: function(JSEvent)}} */
+    if (parent && scopes.svyUI.isJSFormInstanceOf(parent, 'svyBase')) {
+        /** @type {{bubble: function(JSEvent, String)}} */
         var p = parent; //using this to suppress the "...is private" warning even though we are accessing a protected method
-        return p.bubble(event);
+        return p.bubble(event, bubbleEventType);
     }
 
     // outer-most form has been reached
@@ -276,11 +301,12 @@ function bubble(event) {
 /**
  * @protected
  * @param {JSEvent} event
+ * @param {String} bubbleEventType one of the BUBBLE_EVENT_TYPES enum values
  * @return {Boolean}
  *
  * @properties={typeid:24,uuid:"D8FB0D9B-0DCD-4701-9A1C-79D424D62E8A"}
  */
-function onEventBubble(event) {
+function onEventBubble(event, bubbleEventType) {
     return true;
 }
 
