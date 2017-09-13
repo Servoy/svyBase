@@ -5,10 +5,18 @@ items:[
 anchors:15,
 items:[
 {
+containsFormID:"DDA5BCE6-9433-4461-A944-7CCC94060788",
+location:"129,249",
+name:"tab2",
+text:"Customers",
+typeid:15,
+uuid:"6184979C-7E78-464C-9C63-3DE87CBAA023"
+},
+{
 containsFormID:"8B43478E-7DA5-464F-B5BA-8E6BE668B1EE",
-location:"145,259",
+location:"15,247",
 name:"tab1",
-text:"Tab 1",
+text:"Generic",
 typeid:15,
 uuid:"CE2D0E23-75C6-4406-91CB-7C6A0B883E15"
 }

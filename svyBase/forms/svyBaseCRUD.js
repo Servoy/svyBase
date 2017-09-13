@@ -236,7 +236,7 @@ function deleteSelectedRecords() {
         } catch (e) {
 
             // rollback transaction
-            databaseManager.rollbackTransaction();
+            databaseManager.rollbackTransaction(false, false);
             //releasing locks as soon as possible instead of waiting for the finally block
             releaseAllLocks();
 
@@ -375,7 +375,7 @@ function save() {
         } catch (e) {
 
             // rollback transaction
-            databaseManager.rollbackTransaction();
+            databaseManager.rollbackTransaction(false, false);
             //on error releasing all locks as soon as possible instead of waiting for the finally block
             releaseAllLocks();
 
@@ -820,7 +820,10 @@ function getEditedRecords() {
             break;
         }
         case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.CURRENT_RECORD: {
-            records = [foundset.getSelectedRecord()];
+            var rec = foundset.getSelectedRecord();
+            if (rec) {
+                records.push(rec);
+            }
             break;
         }
         case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.AUTO: {
@@ -871,6 +874,15 @@ function onSaveError(error) { }
  */
 function getValidationMarkers() {
     return m_ValidationMarkers;
+}
+
+/**
+ * @protected
+ *
+ * @properties={typeid:24,uuid:"2946BFE1-3027-44BE-8BE3-BC3F38A69AB9"}
+ */
+function clearValidationMarkers() {
+    m_ValidationMarkers = [];
 }
 
 /**

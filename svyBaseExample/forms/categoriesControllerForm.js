@@ -107,7 +107,6 @@ function addCustomActions() {
  */
 function buildToolbar() {
     //build a "toolbar"
-    var map = { };
     var actionNames = getActionNames();
     var jsFrm = solutionModel.getForm(controller.getName());
     var btnWidth = 85;
@@ -127,7 +126,6 @@ function buildToolbar() {
         if (i < actionNames.length - 1) {
             xPos += 5;
         }
-        map[actionName] = btn.name;
         m_ButtonActionMap[actionName] = btn.name;
     }
     if (jsFrm.width < xPos) {

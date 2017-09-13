@@ -1,6 +1,5 @@
 customProperties:"formComponent:false",
 dataSource:"db:/example_data/categories",
-encapsulation:44,
 extendsID:"EA1B462D-6F4D-40C8-8AE8-BF90B3D94CAC",
 items:[
 {
