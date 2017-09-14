@@ -384,6 +384,7 @@ function save() {
                 ex = new scopes.svyDataUtils.SaveDataFailedException('Save Failed: ' + e.message);
             }
             onSaveError(ex);
+            updateStandardFormActionsState();
             updateUI();
             return false;
         }
@@ -403,6 +404,7 @@ function save() {
 
         return true;
     } finally {
+        updateStandardFormActionsState();
         updateUI();
     }
 }
@@ -606,6 +608,7 @@ function onElementDataChange(oldValue, newValue, event) {
 
         return true;
     } finally {
+        updateStandardFormActionsState();
         updateUI();
     }
 }
@@ -953,7 +956,7 @@ function onRecordSelection(event) {
         }
     }
     m_LastSelectedRecord = selRec;
-
+    updateStandardFormActionsState();
     _super.onRecordSelection(event);
 }
 
@@ -1065,6 +1068,7 @@ function setRecordLockRetryPeriod(milliseconds) {
 function onLoad(event) {
     addStandardFormActions();
     _super.onLoad(event);
+    updateStandardFormActionsState();
 }
 
 /**
@@ -1136,16 +1140,6 @@ function updateStandardFormActionsState() {
     innerSetActionEnabled(FORM_ACTION_NAMES.PREVIOUS, (canMove && (selectionIndex > 1)));
     innerSetActionEnabled(FORM_ACTION_NAMES.NEXT, (canMove && (selectionIndex < fsSize)));
     innerSetActionEnabled(FORM_ACTION_NAMES.LAST, (canMove && (selectionIndex < fsSize)));
-}
-
-/**
- * @override
- * @protected
- * @properties={typeid:24,uuid:"E7BDC27B-EC43-47AE-A21A-1AEA9CCC7124"}
- */
-function updateUI() {
-    updateStandardFormActionsState();
-    _super.updateUI();
 }
 
 /**

@@ -60,11 +60,24 @@ function loadData() {
  * @properties={typeid:24,uuid:"E969AC89-2B84-4F4D-AA6E-743757653F4A"}
  */
 function addCustomActions() {
-    var action = addAction(ACTION_LOAD_DATA, loadData);
-    action.setText('Load');
-    action.setTooltipText('Load all available records');
-    action.setVisible(true);
-    action.setEnabled(true);
+    //This is an example of how a custom action can be added
+    //see also updateCustomActionsState
+//    var action = addAction(ACTION_LOAD_DATA, loadData);
+//    action.setText('Load');
+//    action.setTooltipText('Load all available records');
+//    action.setVisible(true);
+//    action.setEnabled(true);
+}
+
+/**
+ * @protected 
+ * @properties={typeid:24,uuid:"8E9C37AC-3118-4C39-A064-6B08F531F0A6"}
+ */
+function updateCustomActionsState(){
+    //Example of updating the enabled/visible state of the custom actions
+    //see also addCustomActions
+//    var action = getAction(ACTION_LOAD_DATA);
+//    action.setEnabled(!hasEdits());
 }
 
 /**
@@ -137,16 +150,6 @@ function updateToolbarState(){
         btn.enabled = action.isEnabled();
         btn.visible = action.isVisible();
     }
-}
-
-/**
- * @protected 
- * @properties={typeid:24,uuid:"8E9C37AC-3118-4C39-A064-6B08F531F0A6"}
- */
-function updateCustomActionsState(){
-    //update the enabled/visible state of the custom actions
-    var action = getAction(ACTION_LOAD_DATA);
-    action.setEnabled(!hasEdits());
 }
 
 /**

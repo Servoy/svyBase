@@ -37,7 +37,6 @@ function fillValueLists() {
 function onSolutionOpen(arg, queryParams) {
     fillValueLists();
     databaseManager.setAutoSave(false);
-    databaseManager.setCreateEmptyFormFoundsets();
 }
 
 /**
