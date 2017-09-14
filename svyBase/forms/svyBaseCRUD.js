@@ -116,6 +116,7 @@ function onUserLeave() {
 }
 
 /**
+ * @protected
  * @return {Boolean}
  * @properties={typeid:24,uuid:"53C0E0C1-925B-4A06-AA0A-0670456433D9"}
  */
@@ -163,7 +164,7 @@ function newRecord() {
 }
 
 /**
- * TODO Consider Locking
+ * @protected
  * @properties={typeid:24,uuid:"38217020-D34E-413A-AE8E-9D53FD1F1C56"}
  */
 function deleteSelectedRecords() {
@@ -311,9 +312,7 @@ function afterNewRecord() { }
 function onNewRecordError(error) { }
 
 /**
- * TODO Consider ValidationException with markers passed to onSaveError(e)
- * TODO Consider multi-selection
- * TODO consider locking option
+ * @protected 
  * @properties={typeid:24,uuid:"987117A7-2184-4702-8101-C89EF93F833A"}
  */
 function save() {
@@ -464,6 +463,7 @@ function cancel() {
 function afterCancel() { }
 
 /**
+ * @protected 
  * @return {Boolean}
  * @properties={typeid:24,uuid:"7C3F8738-74A6-405C-9526-1FB6BABDFAEB"}
  */
@@ -486,6 +486,7 @@ function selectNextRecord() {
 }
 
 /**
+ * @protected 
  * @return {Boolean}
  * @properties={typeid:24,uuid:"57C11407-A4FB-4978-A34E-6B908208EDA4"}
  */
@@ -508,6 +509,7 @@ function selectPreviousRecord() {
 }
 
 /**
+ * @protected 
  * @return {Boolean}
  * @properties={typeid:24,uuid:"E8F23881-342A-47D7-B79D-3AFD90C4F11D"}
  */
@@ -529,6 +531,7 @@ function selectFirstRecord() {
 }
 
 /**
+ * @protected 
  * @return {Boolean}
  * @properties={typeid:24,uuid:"0E6051A2-DD95-4851-A02D-AA9AB9B1CF84"}
  */
@@ -1112,6 +1115,11 @@ function updateStandardFormActionsState() {
     var canMoveWhenEditing = (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.ALLOW_WHEN_EDITING);
     var canMove = (hasFS && !isInFind && (!hasUnsavedChanges || canMoveWhenEditing));
 
+    /**
+     * @private
+     * @param {String} name
+     * @param {Boolean} enabled
+     */
     function innerSetActionEnabled(name, enabled) {
         var action = getAction(name);
         if (action) {
