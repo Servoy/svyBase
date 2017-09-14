@@ -1120,7 +1120,8 @@ function updateStandardFormActionsState() {
     }
 
     innerSetActionEnabled(FORM_ACTION_NAMES.NEW, canMove);
-    innerSetActionEnabled(FORM_ACTION_NAMES.DELETE, (hasRecordSelection && canMove));
+    //Note: delete must be disabled if there are unsaved changes, otherwise the delete will try to silently save the changes first without doing any validation
+    innerSetActionEnabled(FORM_ACTION_NAMES.DELETE, (hasRecordSelection && canMove && !hasUnsavedChanges));
     innerSetActionEnabled(FORM_ACTION_NAMES.SAVE, hasUnsavedChanges);
     innerSetActionEnabled(FORM_ACTION_NAMES.CANCEL, hasUnsavedChanges);
     innerSetActionEnabled(FORM_ACTION_NAMES.FIRST, (canMove && (selectionIndex > 1)));

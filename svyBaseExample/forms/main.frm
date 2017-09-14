@@ -6,17 +6,25 @@ anchors:15,
 items:[
 {
 containsFormID:"DDA5BCE6-9433-4461-A944-7CCC94060788",
-location:"129,249",
+location:"154,245",
 name:"tab2",
-text:"Customers",
+text:"Customers - Record",
 typeid:15,
 uuid:"6184979C-7E78-464C-9C63-3DE87CBAA023"
+},
+{
+containsFormID:"81E3231E-273C-4529-8053-2512D2889540",
+location:"330,242",
+name:"tab3",
+text:"Customers - Grid",
+typeid:15,
+uuid:"6923013D-DB1A-4533-A584-342E1D3A0FA9"
 },
 {
 containsFormID:"8B43478E-7DA5-464F-B5BA-8E6BE668B1EE",
 location:"15,247",
 name:"tab1",
-text:"Generic",
+text:"Dynamic Policy",
 typeid:15,
 uuid:"CE2D0E23-75C6-4406-91CB-7C6A0B883E15"
 }

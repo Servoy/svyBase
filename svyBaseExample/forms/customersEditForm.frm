@@ -73,7 +73,7 @@ uuid:"5444FC71-44D4-4B2E-A7C1-6BDA3B0F4626"
 {
 dataProviderID:"postalcode",
 location:"491,206",
-name:"dlsPostalCode",
+name:"fldPostalCode",
 size:"209,30",
 typeid:4,
 uuid:"649C15D7-7FF9-4293-8562-E82447188A53"
@@ -193,6 +193,7 @@ uuid:"FCA81FAC-0ECE-4C50-A7F9-3931DB7E8786"
 }
 ],
 name:"customersEditForm",
+namedFoundSet:"separate",
 size:"801,475",
 typeid:3,
 uuid:"DDA5BCE6-9433-4461-A944-7CCC94060788"
