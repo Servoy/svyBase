@@ -81,7 +81,6 @@ var m_RecordLockRetryPeriodMilliseconds = 100;
  * @properties={typeid:24,uuid:"6B9C30B7-28CF-404C-B37D-4624A163C070"}
  */
 function hasEdits() {
-
     var records = getEditedRecords();
     for (var i in records) {
         if (records[i].hasChangedData() || records[i].isNew()) {
@@ -1138,4 +1137,26 @@ function updateStandardFormActionsState() {
 function updateUI() {
     updateStandardFormActionsState();
     _super.updateUI();
+}
+
+/**
+ * Handle hide window.
+ * @override 
+ * @protected
+ * @param {JSEvent} event the event that triggered the action *
+ * @return {Boolean}
+ *
+ *
+ * @properties={typeid:24,uuid:"BA442073-BB77-423B-B6C6-6BE0369EF186"}
+ */
+function onHide(event) {
+    //apply the FormHide policy
+    if (getCrudPolicies().getFormHidePolicy() == scopes.svyCRUDManager.FORM_HIDE_POLICY.PREVENT_WHEN_EDITING) {
+        if (hasEdits()){
+            plugins.dialogs.showInfoDialog('Unsaved Changes', 'Please, save or cancel any unsaved changes before navigating away from the current form.');
+            return false;
+        }
+    }
+    
+    return _super.onHide(event);
 }

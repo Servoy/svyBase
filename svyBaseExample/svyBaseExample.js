@@ -39,3 +39,40 @@ function onSolutionOpen(arg, queryParams) {
     databaseManager.setAutoSave(false);
     databaseManager.setCreateEmptyFormFoundsets();
 }
+
+/**
+ * Callback method for when an error occurred (the error can be a JavaScript or Servoy Java error).
+ * @public
+ * @param ex exception to handle
+ * @return {Boolean}
+ *
+ * @properties={typeid:24,uuid:"59E18FFB-88E1-48C2-9CC7-D069111AFC8A"}
+ */
+function onError(ex) {
+    var errorInfo = [scopes.svyBaseExampleUtils.getExceptionText(ex)];
+    if (ex instanceof ServoyException) {
+        /** @type {ServoyException} */
+        var servoyException = ex;
+
+        errorInfo.push('');
+        errorInfo.push('The error is ServoyException');
+        errorInfo.push('Error Code: ' + servoyException.getErrorCode());
+
+        //NOTE: the stack trace shown is for demo purposes only - production code should not expose this to users
+        if (servoyException.getStackTrace) {
+            scopes.svyBaseExampleUtils.logError(servoyException.getStackTrace());
+        }
+
+        var failedRecordsErrors = scopes.svyBaseExampleUtils.getFailedRecordsErrors();
+        if (failedRecordsErrors) {
+            errorInfo.push('');
+            errorInfo.push('Additional error information:');
+            errorInfo.push(failedRecordsErrors);
+        }
+    }
+
+    var msg = errorInfo.join('<br>');
+    scopes.svyBaseExampleUtils.logError(msg);
+    plugins.dialogs.showErrorDialog('Error', utils.stringFormat('The following error was encountered:<br>%1$s', [msg]), 'OK');
+    return true;
+}

@@ -1,4 +1,5 @@
 /**
+ * @private 
  * @type {String}
  *
  * @properties={typeid:35,uuid:"48F66F7F-61A9-4E8C-A97A-0462B7BDC0DC"}
@@ -6,6 +7,7 @@
 var DESIGNTIME_PROP_ACTION_NAME = 'action-name';
 
 /**
+ * @private 
  * @type {String}
  *
  * @properties={typeid:35,uuid:"6A386A38-41C4-4F26-BF31-F6E34FB765C2"}
@@ -13,9 +15,18 @@ var DESIGNTIME_PROP_ACTION_NAME = 'action-name';
 var ACTION_LOAD_DATA = 'load-data';
 
 /**
+ * @private 
  * @properties={typeid:35,uuid:"2F32C22C-9D79-4E58-9963-4F6A09408A8F",variableType:-4}
  */
 var m_ButtonActionMap = { };
+
+/**
+ * @protected 
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"E6F7093B-FD89-4B40-802D-08DEE767A88A"}
+ */
+var m_PolicyInfo = 'not available';
 
 /**
  * Used for handling the action event of all action toolbar buttons.
@@ -57,6 +68,7 @@ function addCustomActions() {
 }
 
 /**
+ * Extending forms must override this method to set the CRUD policies for the form
  * @protected 
  * @properties={typeid:24,uuid:"0E6BA8D1-2242-4696-94CC-59FF0A24DBB2"}
  */
@@ -65,6 +77,7 @@ function setFormPolicies(){
 }
 
 /**
+ * Extending forms must override this method to provide the name of the label which indicates where the toolbar should be placed
  * @protected 
  * @return {String} the name of the label element which is used as a "placeholder" where the toolbar should be created
  * @properties={typeid:24,uuid:"4A092249-076D-4C6D-B25E-8E214258FCC8"}
@@ -74,6 +87,7 @@ function getToolbarPlaceholderLabelName(){
 }
 
 /**
+ * Note: this method calls controller.recreateUI()
  * @private
  * @properties={typeid:24,uuid:"60A76C0E-9AE8-4390-9727-D2051865CEB9"}
  */
@@ -84,12 +98,14 @@ function buildToolbar() {
     var btnWidth = 85;
     var btnActionMthd = jsFrm.getMethod('onActionToolbarButton');
     var toolbarPlaceholder = jsFrm.getLabel(getToolbarPlaceholderLabelName());
+    toolbarPlaceholder.visible = false;
+    var btnHeight = Math.max(toolbarPlaceholder.height, 30);
     var yPos = toolbarPlaceholder.y;
     var xPos = toolbarPlaceholder.x;
     for (var i = 0; i < actionNames.length; i++) {
         var actionName = actionNames[i];
         var action = getAction(actionName);
-        var btn = jsFrm.newButton(action.getText(), xPos, yPos, btnWidth, 30, btnActionMthd);
+        var btn = jsFrm.newButton(action.getText(), xPos, yPos, btnWidth, btnHeight, btnActionMthd);
         btn.name = 'toolbarBtn' + (i + 1);
         btn.toolTipText = action.getTooltipText();
         btn.putDesignTimeProperty(DESIGNTIME_PROP_ACTION_NAME, actionName);
@@ -124,6 +140,16 @@ function updateToolbarState(){
 }
 
 /**
+ * @protected 
+ * @properties={typeid:24,uuid:"8E9C37AC-3118-4C39-A064-6B08F531F0A6"}
+ */
+function updateCustomActionsState(){
+    //update the enabled/visible state of the custom actions
+    var action = getAction(ACTION_LOAD_DATA);
+    action.setEnabled(!hasEdits());
+}
+
+/**
  * Callback method when form is (re)loaded.
  * @override
  * @protected
@@ -134,6 +160,7 @@ function initializingForm() {
     setFormPolicies();
     addCustomActions();
     buildToolbar();
+    m_PolicyInfo = getPolicyInfo();
 }
 
 /**
@@ -162,8 +189,7 @@ function updatingUI() {
     clearValidationMarkers();
 
     //update the state of custom actions
-    var action = getAction(ACTION_LOAD_DATA);
-    action.setEnabled(!hasEdits());
+    updateCustomActionsState();
     
     //update the state of the toolbar buttons
     updateToolbarState();
@@ -176,5 +202,38 @@ function updatingUI() {
  * @properties={typeid:24,uuid:"10202653-4F60-406C-ADB2-EE9DDBBAE82F"}
  */
 function onSaveError(error) { 
-    plugins.webnotificationsToastr.error(error.message, 'Save Error');
+    //not sure why error.message shows up warning in code
+    var errMsg = error['message'];
+    var rec = error.getRecord();
+    if (rec && rec.exception){
+        errMsg = rec.exception.getMessage();
+    }    
+    plugins.webnotificationsToastr.error(utils.stringFormat('Failed to save record from %1$s due to the following:<br>%2$s',[error.getDataSourceName(), errMsg]) , 'Save Error');
+}
+
+/**
+ * @override 
+ * @protected
+ * @param {scopes.svyDataUtils.DeleteRecordFailedException} error
+ * @properties={typeid:24,uuid:"AE38CE24-58F7-43B5-A5EA-8A3A5CE70C27"}
+ */
+function onDeleteError(error) { 
+  //not sure why error.message shows up warning in code
+    var errMsg = error['message'];
+    var rec = error.getRecord();
+    if (rec && rec.exception){
+        errMsg = rec.exception.getMessage();
+    }    
+    plugins.webnotificationsToastr.error(utils.stringFormat('Failed to delete record from %1$s due to the following:<br>%2$s',[error.getDataSourceName(), errMsg]) , 'Delete Error');
+}
+
+/**
+ * @public  
+ * @return {String}
+ * @properties={typeid:24,uuid:"B823D0A5-9610-4C22-AE32-8DA781D8EE0A"}
+ */
+function getPolicyInfo(){
+    var poli = getCrudPolicies();
+    var res = utils.stringFormat('<h4>CRUD Policy Info</h4>Batch Scope: <b>%1$s</b><br>Record Selection: <b>%2$s</b><br>Form Hide: <b>%3$s</b><br>Validation: <b>%4$s</b><br>Locking: <b>%5$s</b><br>',[poli.getBatchScopePolicy(), poli.getRecordSelectionPolicy(), poli.getFormHidePolicy(), poli.getValidationPolicy(), poli.getRecordLockingPolicy()]);
+    return res;
 }

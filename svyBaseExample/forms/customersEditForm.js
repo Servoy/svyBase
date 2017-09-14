@@ -10,7 +10,7 @@ function setFormPolicies(){
     poli.setRecordLockingPolicy(scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO);
     poli.setRecordSelectionPolicy(scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING);
     poli.setValidationPolicy(scopes.svyCRUDManager.VALIDATION_POLICY.DEFERRED);
-    poli.setFormHidePolicy(scopes.svyCRUDManager.FORM_HIDE_POLICY.ALLOW_WHEN_EDITING);    
+    poli.setFormHidePolicy(scopes.svyCRUDManager.FORM_HIDE_POLICY.PREVENT_WHEN_EDITING);    
 }
 
 
