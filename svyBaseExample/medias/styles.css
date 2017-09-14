@@ -11,8 +11,11 @@
     background-color: orange;
     color: black;
 }
-/*
-.ui-grid-cell {
+div.ui-grid-cell input:focus {
+	background-color: #ffc891 !important;
+}
+
+div.ui-grid-cell input{
 	border-bottom-width: 1px;
     border-bottom-color: grey;
     border-bottom-style: solid;
@@ -20,10 +23,3 @@
     border-right-color: grey;
     border-right-style: solid;
 }
-.ui-grid-row:nth-child(even) .ui-grid-cell {
-	background: #eeffff;
-}
-.ui-grid-row-selected div.ui-grid-cell {
-    background: #ffc891 !important;	
-}
-*/
