@@ -7,7 +7,7 @@
 var DESIGNTIME_PROP_ACTION_NAME = 'action-name';
 
 /**
- * @private 
+ * @protected 
  * @type {String}
  *
  * @properties={typeid:35,uuid:"6A386A38-41C4-4F26-BF31-F6E34FB765C2"}
@@ -118,15 +118,19 @@ function buildToolbar() {
     for (var i = 0; i < actionNames.length; i++) {
         var actionName = actionNames[i];
         var action = getAction(actionName);
+        action.addPropertyChangeListener(handleActionPropChange);
         var btn = jsFrm.newButton(action.getText(), xPos, yPos, btnWidth, btnHeight, btnActionMthd);
         btn.name = 'toolbarBtn' + (i + 1);
         btn.toolTipText = action.getTooltipText();
         btn.putDesignTimeProperty(DESIGNTIME_PROP_ACTION_NAME, actionName);
         btn.styleClass = 'toolbar-btn';
+        btn.enabled = action.isEnabled();
+        btn.visible = action.isVisible();
         xPos += btnWidth;
         if (i < actionNames.length - 1) {
             xPos += 5;
         }
+        
         m_ButtonActionMap[actionName] = btn.name;
     }
     if (jsFrm.width < xPos) {
@@ -136,19 +140,32 @@ function buildToolbar() {
 }
 
 /**
+ * @properties={typeid:24,uuid:"5114538E-3230-4096-A3A5-7F4B007353C2"}
+ * @private 
+ * @param {{propertyName: String, oldValue, newValue, source: scopes.svyActionManager.FormAction}} arg
+ */
+function handleActionPropChange(arg) {
+    if (arg && arg.source) {
+        /** @type {RuntimeButton} */
+        var btn = elements[m_ButtonActionMap[arg.source.getActionName()]];
+        btn.enabled = arg.source.isEnabled();
+        btn.visible = arg.source.isVisible();
+        btn.text = arg.source.getText();
+        btn.toolTipText = arg.source.getTooltipText();
+    }
+}
+
+/**
  * @protected
  * @properties={typeid:24,uuid:"636E913E-6944-4988-A438-C3BB8FF5EFA1"}
  */
-function updateToolbarState(){
+function removeActionPropChangeListeners(){
     //sync buttons and actions state
     var actionNames = getActionNames();
     for (var n in actionNames) {
         var actionName = actionNames[n];
         var action = getAction(actionName);
-        /** @type {RuntimeButton} */
-        var btn = elements[m_ButtonActionMap[actionName]];
-        btn.enabled = action.isEnabled();
-        btn.visible = action.isVisible();
+        action.removePropertyChangeListener(handleActionPropChange);        
     }
 }
 
@@ -164,6 +181,17 @@ function initializingForm() {
     addCustomActions();
     buildToolbar();
     m_PolicyInfo = getPolicyInfo();
+}
+
+/**
+ * Callback method when form is unloaded.
+ * @override
+ * @protected
+ *
+ * @properties={typeid:24,uuid:"8FC668F5-2CD2-4221-AF64-4DDCB20F0FA1"}
+ */
+function uninitializingForm() {
+    removeActionPropChangeListeners();
 }
 
 /**
@@ -193,9 +221,6 @@ function updatingUI() {
 
     //update the state of custom actions
     updateCustomActionsState();
-    
-    //update the state of the toolbar buttons
-    updateToolbarState();
 }
 
 /**

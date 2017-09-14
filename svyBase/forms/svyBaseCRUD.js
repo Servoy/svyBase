@@ -147,6 +147,7 @@ function newRecord() {
             ex = new scopes.svyDataUtils.NewRecordFailedException('New Record Failed: ' + e.message, foundset);
         }
         onNewRecordError(ex);
+        updateStandardFormActionsState();
         updateUI();
         return false;
     }
@@ -159,6 +160,7 @@ function newRecord() {
 
         return true;
     } finally {
+        updateStandardFormActionsState();
         updateUI();
     }
 }
@@ -247,6 +249,7 @@ function deleteSelectedRecords() {
                 ex = new scopes.svyDataUtils.DeleteRecordFailedException('Delete failed: ' + e.message, foundset);
             }
             onDeleteError(ex);
+            updateStandardFormActionsState();
             updateUI();
             return false;
         }
@@ -263,6 +266,7 @@ function deleteSelectedRecords() {
 
         return true;
     } finally {
+        updateStandardFormActionsState();
         updateUI();
     }
 }
@@ -419,6 +423,7 @@ function beforeCancel() {
 }
 
 /**
+ * @protected 
  * @properties={typeid:24,uuid:"3C6EB4F1-3B75-4AB4-BCB5-4DD2146F5B86"}
  */
 function cancel() {
@@ -454,6 +459,7 @@ function cancel() {
 
         return true;
     } finally {
+        updateStandardFormActionsState();
         updateUI();
     }
 }
@@ -916,6 +922,7 @@ function onEventBubble(event, bubbleEventType) {
     switch (bubbleEventType) {
 
         case BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE: {
+            updateStandardFormActionsState();
             if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
                 //this will update the UI as well
                 validate(getEditedRecords());
@@ -1089,6 +1096,7 @@ function addStandardFormActions() {
         action.setText(text);
         action.setTooltipText(tooltip);
         action.setVisible(true);
+        action.setEnabled(false);
     }
 
     innerAddAction(FORM_ACTION_NAMES.NEW, newRecord, 'New', 'Add new record');
