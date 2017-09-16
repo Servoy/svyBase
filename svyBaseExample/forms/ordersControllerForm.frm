@@ -157,11 +157,13 @@ uuid:"6C5A6522-3851-45A2-9F51-F2E227BB406F"
 },
 {
 dataProviderID:"customerid",
+displayType:10,
 location:"102,96",
 name:"customerid",
 size:"189,30",
 typeid:4,
-uuid:"742FFF90-3A75-4017-8F6E-22EBA9052681"
+uuid:"742FFF90-3A75-4017-8F6E-22EBA9052681",
+valuelistID:"6A7D6A29-0689-44C9-AA04-5E8C5BE320EE"
 },
 {
 labelFor:"customerid",

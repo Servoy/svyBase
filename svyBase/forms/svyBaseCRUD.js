@@ -94,11 +94,15 @@ function hasEdits() {
  * Indicates if there are ERROR markers on this form since the last validation
  * @public
  * @return {Boolean}
+ * @param {Array<scopes.svyValidationManager.ValidationMarker>} [markersToCheck] if not specified will use the internal validation markers
  * @properties={typeid:24,uuid:"55BD75F0-EE8A-445C-89E7-6148A70D9DFC"}
  */
-function hasErrors() {
-    for (var i in m_ValidationMarkers) {
-        if (m_ValidationMarkers[i].getLevel() == scopes.svyValidationManager.VALIDATION_LEVEL.ERROR) {
+function hasErrors(markersToCheck) {
+    if (!markersToCheck){
+        markersToCheck = m_ValidationMarkers;
+    }
+    for (var i in markersToCheck) {
+        if (markersToCheck[i].getLevel() == scopes.svyValidationManager.VALIDATION_LEVEL.ERROR) {
             return true;
         }
     }
@@ -192,14 +196,16 @@ function deleteSelectedRecords() {
 
         // validate
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
-            canDelete(records);
-            if (hasErrors()) {
+            var validationMarkers = canDelete(records);
+            if (hasErrors(validationMarkers)) {
+                updateUI();
                 return false;
             }
         }
 
         // check pre-delete handler(s)
         if (!beforeDelete()) {
+            updateUI();
             return false;
         }
 
@@ -336,14 +342,16 @@ function save() {
     try {
         // validate
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
-            validate(records);
-            if (hasErrors()) {
+            var validationMarkers = validate(records);
+            if (hasErrors(validationMarkers)) {
+                updateUI();
                 return false;
             }
         }
 
         // Call before-save handler(s)
         if (!beforeSave()) {
+            updateUI();
             return false;
         }
 
@@ -768,13 +776,9 @@ function trackDataChange(event) {
 function validate(records) {
     //	delegate to registered validators and collect markers
     m_ValidationMarkers = [];
-    try {
-        for (var i in records) {
-            m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
-        }
-    } finally {
-        // update UI
-        updateUI();
+    
+    for (var i in records) {
+        m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
     }
 
     return m_ValidationMarkers;
@@ -804,9 +808,6 @@ function canDelete(records) {
     for (var i in records) {
         m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.canDelete(records[i]));
     }
-
-    // update UI
-    updateUI();
 
     return m_ValidationMarkers;
 }
@@ -888,6 +889,8 @@ function getValidationMarkers() {
 }
 
 /**
+ * By default, validation markers are cleared only when validate() is called. Use this method if it is necessary 
+ * to clear the internal validation markers without performing validation.  
  * @protected
  *
  * @properties={typeid:24,uuid:"2946BFE1-3027-44BE-8BE3-BC3F38A69AB9"}
@@ -899,13 +902,17 @@ function clearValidationMarkers() {
 /**
  * @protected
  * @return {Array<scopes.svyValidationManager.ValidationMarker>}
+ * @param {Array<scopes.svyValidationManager.ValidationMarker>} [markersToCheck] if not specified will use the internal validation markers
  * @properties={typeid:24,uuid:"1AC72AB8-8F20-4BA7-9FBF-BE403C079F9C"}
  */
-function getErrors() {
+function getErrors(markersToCheck) {
     var markers = [];
-    for (var i in m_ValidationMarkers) {
-        if (m_ValidationMarkers[i].getLevel() == scopes.svyValidationManager.VALIDATION_LEVEL.ERROR) {
-            markers.push(m_ValidationMarkers[i]);
+    if (!markersToCheck){
+        markersToCheck = m_ValidationMarkers;
+    }
+    for (var i in markersToCheck) {
+        if (markersToCheck[i].getLevel() == scopes.svyValidationManager.VALIDATION_LEVEL.ERROR) {
+            markers.push(markersToCheck[i]);
         }
     }
     return markers;

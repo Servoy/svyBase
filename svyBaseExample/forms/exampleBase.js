@@ -207,7 +207,7 @@ function uninitializingForm() {
  */
 function updatingUI() {
     var markers = getValidationMarkers();
-    for (var i in markers) {
+    for (var i = markers.length - 1; i >= 0; i--) {
         switch (markers[i].getLevel()) {
             case scopes.svyValidationManager.VALIDATION_LEVEL.ERROR: {
                 plugins.webnotificationsToastr.error(markers[i].getMessage(), 'Validation Error');
