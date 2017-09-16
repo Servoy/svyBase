@@ -6,7 +6,7 @@ anchors:15,
 items:[
 {
 containsFormID:"DDA5BCE6-9433-4461-A944-7CCC94060788",
-location:"154,245",
+location:"44,212",
 name:"tab2",
 text:"Customers - Record",
 typeid:15,
@@ -14,15 +14,23 @@ uuid:"6184979C-7E78-464C-9C63-3DE87CBAA023"
 },
 {
 containsFormID:"81E3231E-273C-4529-8053-2512D2889540",
-location:"330,242",
+location:"88,246",
 name:"tab3",
 text:"Customers - Grid",
 typeid:15,
 uuid:"6923013D-DB1A-4533-A584-342E1D3A0FA9"
 },
 {
+containsFormID:"E07E1784-8A16-4231-BF1B-23CFF5EA3170",
+location:"135,278",
+name:"tab4",
+text:"Orders - Master/Detail",
+typeid:15,
+uuid:"BBC8EC8F-BE2C-4392-BCA0-D6D58C07D5BC"
+},
+{
 containsFormID:"8B43478E-7DA5-464F-B5BA-8E6BE668B1EE",
-location:"15,247",
+location:"221,311",
 name:"tab1",
 text:"Dynamic Policy",
 typeid:15,
@@ -35,6 +43,14 @@ size:"640,432",
 tabOrientation:1,
 typeid:16,
 uuid:"43332B83-495A-4305-9B53-FB4DA7960A1A"
+},
+{
+location:"16,2",
+name:"lblHeader",
+size:"298,40",
+text:"<h2>svyBase Example<\/h2>",
+typeid:7,
+uuid:"A1F6FF69-5224-4828-AF8C-A162BF437658"
 },
 {
 height:480,

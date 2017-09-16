@@ -105,12 +105,18 @@ function getToolbarPlaceholderLabelName(){
  * @properties={typeid:24,uuid:"60A76C0E-9AE8-4390-9727-D2051865CEB9"}
  */
 function buildToolbar() {
+    var toolbarPlaceholderLabelName = getToolbarPlaceholderLabelName();
+    if (!toolbarPlaceholderLabelName) {
+        //this form does not want to have a "standard" toolbar
+        return;
+    }
+    
     //build a "toolbar"
     var actionNames = getActionNames();
     var jsFrm = solutionModel.getForm(controller.getName());
     var btnWidth = 85;
     var btnActionMthd = jsFrm.getMethod('onActionToolbarButton');
-    var toolbarPlaceholder = jsFrm.getLabel(getToolbarPlaceholderLabelName());
+    var toolbarPlaceholder = jsFrm.getLabel(toolbarPlaceholderLabelName);
     toolbarPlaceholder.visible = false;
     var btnHeight = Math.max(toolbarPlaceholder.height, 30);
     var yPos = toolbarPlaceholder.y;
