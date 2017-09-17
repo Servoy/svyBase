@@ -217,28 +217,14 @@ function deleteSelectedRecords() {
         }
         try {
 
-            // Delete selected records individually for better error handling
-            for (var i in records) {
-                var record = records[i];
-
-                // delete record
-                try {
-                    if (!foundset.deleteRecord(record)) {
-                        throw new scopes.svyDataUtils.DeleteRecordFailedException('Delete Record Failed: ' + record.exception, record);
-                    }
-
-                    // handle expected errors, i.e. DELETE_NOT_GRANTED
-                } catch (e) {
-                    throw new scopes.svyDataUtils.DeleteRecordFailedException(e.message, record);
-                }
-            }
+            deleteValidatedRecords(records);
 
             if (usingLocalTransaction) {
                 // commit transaction
                 if (!databaseManager.commitTransaction()) {
 
                     // TODO consider adding transaction failed exception to svyDataUtils
-                    throw new scopes.svyDataUtils.SvyDataException('Transaction Failed', foundset);
+                    throw new scopes.svyDataUtils.SvyDataException('Transaction Failed');
                 }
             }
         } catch (e) {
@@ -274,6 +260,38 @@ function deleteSelectedRecords() {
     } finally {
         updateStandardFormActionsState();
         updateUI();
+    }
+}
+
+/**
+ * This method is called as part of the "Delete" operation and is executed in the context of the "Delete" database transaction.
+ * The provided records have already been validated and it is responsibility of this method to actually delete them from the database.
+ * This method should throw an exception if any record could not be deleted for some reason in order to ensure that the
+ * encompassing database transaction is rolled back correctly.
+ * Extending forms may override this method if as part of the same database transaction  
+ * they need to save/delete any additional records which are not part of work batch scope.
+ * 
+ * @protected 
+ * @param {Array<JSRecord>} records The validated records which must be deleted.
+ * @throws {Error} If any record could not be deleted and the database transaction needs to be rolled back.
+ *
+ * @properties={typeid:24,uuid:"8836F65A-7257-4F24-9612-59C13E709E0B"}
+ */
+function deleteValidatedRecords(records){
+    // Delete selected records individually for better error handling
+    for (var i in records) {
+        var record = records[i];
+
+        // delete record
+        try {
+            if (!foundset.deleteRecord(record)) {
+                throw new scopes.svyDataUtils.DeleteRecordFailedException('Delete Record Failed: ' + record.exception, record);
+            }
+
+            // handle expected errors, i.e. DELETE_NOT_GRANTED
+        } catch (e) {
+            throw new scopes.svyDataUtils.DeleteRecordFailedException(e.message, record);
+        }
     }
 }
 
@@ -361,25 +379,14 @@ function save() {
         if (usingLocalTransaction) {
             databaseManager.startTransaction();
         }
+        
         try {
-
-            // save records 1-by-1
-            for (var i in records) {
-                var record = records[i];
-
-                try {
-                    if (!databaseManager.saveData(record)) {
-                        throw new scopes.svyDataUtils.SaveDataFailedException('Save Failed', record);
-                    }
-                } catch (ex) {
-                    throw new scopes.svyDataUtils.SaveDataFailedException(ex.message, record);
-                }
-            }
-
+            saveValidatedRecords(records);
+            
             // commit transaction
             if (usingLocalTransaction) {
                 if (!databaseManager.commitTransaction()) {
-                    throw new scopes.svyDataUtils.SaveDataFailedException('Could not commit transaction', record);
+                    throw new scopes.svyDataUtils.SaveDataFailedException('Could not commit transaction');
                 }
             }
         } catch (e) {
@@ -418,6 +425,34 @@ function save() {
     } finally {
         updateStandardFormActionsState();
         updateUI();
+    }
+}
+
+/**
+ * This method is called as part of the "Save" operation and is executed in the context of the "Save" database transaction.
+ * The provided records have already been validated and it is responsibility of this method to actually save them in the database.
+ * This method should throw an exception if any record could not be saved for some reason in order to ensure that the
+ * encompassing database transaction is rolled back correctly.
+ * Extending forms may override this method if as part of the same database transaction 
+ * they need to save/delete any additional records which are not part of work batch scope.
+ * 
+ * @protected 
+ * @param {Array<JSRecord>} records The validated records which must be saved
+ * @throws {Error} If any record could not be saved and the database transaction needs to be rolled back.
+ * @properties={typeid:24,uuid:"E80B1DAF-2CCD-4AE7-8ECD-A35C4C3969A3"}
+ */
+function saveValidatedRecords(records){
+    // save records 1-by-1
+    for (var i in records) {
+        var record = records[i];
+
+        try {
+            if (!databaseManager.saveData(record)) {
+                throw new scopes.svyDataUtils.SaveDataFailedException('Save Failed', record);
+            }
+        } catch (ex) {
+            throw new scopes.svyDataUtils.SaveDataFailedException(ex.message, record);
+        }
     }
 }
 
@@ -672,10 +707,8 @@ function untrack(records) {
 /**
  * Add records to tracking
  *
- * TODO EXPERIMENTAL TEST ME
- * @private
+ * @protected
  * @param {JSRecord|Array<JSRecord>|JSFoundSet} records
- * TODO Consider makeing protected
  * @properties={typeid:24,uuid:"40E46972-E802-43D9-AF07-B32B1B3DBF4E"}
  */
 function track(records) {
@@ -923,6 +956,8 @@ function getErrors(markersToCheck) {
  * @protected
  * @param {JSEvent} event
  * @param {String} bubbleEventType one of the BUBBLE_EVENT_TYPES enum values
+ * @return {Boolean}
+ * 
  * @properties={typeid:24,uuid:"D7A776BE-7055-41F2-A00B-C041B0DDF4AD"}
  */
 function onEventBubble(event, bubbleEventType) {
@@ -939,6 +974,7 @@ function onEventBubble(event, bubbleEventType) {
             break;
         }
     }
+    return true;
 }
 
 /**

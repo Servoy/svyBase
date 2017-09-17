@@ -41,7 +41,7 @@ uuid:"1A61D6C4-3628-4435-9B88-B43A9FB0AF2E"
 {
 location:"191,329",
 name:"btnAddDetail",
-onActionMethodID:"-1",
+onActionMethodID:"01EF1AB4-1A24-4CB2-B464-A3D880EB3054",
 size:"94,32",
 styleClass:"toolbar-btn",
 text:"Add Detail",
@@ -59,7 +59,7 @@ uuid:"1DF71259-A7C5-4E5B-B35C-29F803ED70C9"
 {
 location:"288,330",
 name:"btnRemoveDetail",
-onActionMethodID:"-1",
+onActionMethodID:"4DB906D9-30D0-4D1E-8282-04C86A1ED833",
 size:"94,32",
 styleClass:"toolbar-btn",
 text:"Remove Detail",

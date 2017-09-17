@@ -287,11 +287,14 @@ function bubble(event, bubbleEventType) {
     }
 
     // bubble to parent form
-    var parent = forms[scopes.svyUI.getParentFormName(this)];
-    if (parent && scopes.svyUI.isJSFormInstanceOf(parent, 'svyBase')) {
-        /** @type {{bubble: function(JSEvent, String)}} */
-        var p = parent; //using this to suppress the "...is private" warning even though we are accessing a protected method
-        return p.bubble(event, bubbleEventType);
+    var parentName = scopes.svyUI.getParentFormName(this);
+    if (parentName) {
+        var parent = forms[parentName];
+        if (parent && scopes.svyUI.isJSFormInstanceOf(parent, 'svyBase')) {
+            /** @type {{bubble: function(JSEvent, String)}} */
+            var p = parent; //using this to suppress the "...is private" warning even though we are accessing a protected method
+            return p.bubble(event, bubbleEventType);
+        }
     }
 
     // outer-most form has been reached

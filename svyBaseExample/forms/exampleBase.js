@@ -29,32 +29,6 @@ var m_ButtonActionMap = { };
 var m_PolicyInfo = 'not available';
 
 /**
- * Used for handling the action event of all action toolbar buttons.
- * @param {JSEvent} event the event that triggered the action
- *
- * @private
- *
- * @properties={typeid:24,uuid:"A9AF7751-AA82-460C-9A3F-25D62C9CB3FF"}
- */
-function onActionToolbarButton(event) {
-    /** @type {RuntimeButton} */
-    var btn = event.getSource();
-    //this relies on a design-time property to link the button with the form action
-    var actionName = btn.getDesignTimeProperty(DESIGNTIME_PROP_ACTION_NAME);
-    var action = getAction(actionName);
-    action.invoke(event);
-}
-
-/**
- * Custom form action to load all available records
- * @protected
- * @properties={typeid:24,uuid:"18589D43-E5A1-4CE9-9F7C-903D80773832"}
- */
-function loadData() {
-    foundset.loadAllRecords();
-}
-
-/**
  * Adds the custom form action
  * @protected
  * @properties={typeid:24,uuid:"E969AC89-2B84-4F4D-AA6E-743757653F4A"}
@@ -97,6 +71,32 @@ function setFormPolicies(){
  */
 function getToolbarPlaceholderLabelName(){
     throw new Error('Abstract method getToolbarPlaceholderLabelName is not overridden in form ' + controller.getName());
+}
+
+/**
+ * Used for handling the action event of all action toolbar buttons.
+ * @param {JSEvent} event the event that triggered the action
+ *
+ * @private
+ *
+ * @properties={typeid:24,uuid:"A9AF7751-AA82-460C-9A3F-25D62C9CB3FF"}
+ */
+function onActionToolbarButton(event) {
+    /** @type {RuntimeButton} */
+    var btn = event.getSource();
+    //this relies on a design-time property to link the button with the form action
+    var actionName = btn.getDesignTimeProperty(DESIGNTIME_PROP_ACTION_NAME);
+    var action = getAction(actionName);
+    action.invoke(event);
+}
+
+/**
+ * Custom form action to load all available records
+ * @protected
+ * @properties={typeid:24,uuid:"18589D43-E5A1-4CE9-9F7C-903D80773832"}
+ */
+function loadData() {
+    foundset.loadAllRecords();
 }
 
 /**
@@ -270,4 +270,13 @@ function getPolicyInfo(){
     var poli = getCrudPolicies();
     var res = utils.stringFormat('<h4>CRUD Policy Info</h4>Batch Scope: <b>%1$s</b><br>Record Selection: <b>%2$s</b><br>Form Hide: <b>%3$s</b><br>Validation: <b>%4$s</b><br>Locking: <b>%5$s</b><br>',[poli.getBatchScopePolicy(), poli.getRecordSelectionPolicy(), poli.getFormHidePolicy(), poli.getValidationPolicy(), poli.getRecordLockingPolicy()]);
     return res;
+}
+
+/**
+ * @protected 
+ * @properties={typeid:24,uuid:"3E405BFA-CD00-4AAB-9C68-BDAA4C8161A0"}
+ */
+function updateActionsState(){
+    updateStandardFormActionsState();
+    updateCustomActionsState();
 }
