@@ -1,4 +1,5 @@
 /**
+ * We use this when building dynamic toolbars to link a button element to a form action
  * @private 
  * @type {String}
  *
@@ -7,6 +8,7 @@
 var DESIGNTIME_PROP_ACTION_NAME = 'action-name';
 
 /**
+ * Action name for a custom form action
  * @protected 
  * @type {String}
  *
@@ -15,12 +17,14 @@ var DESIGNTIME_PROP_ACTION_NAME = 'action-name';
 var ACTION_LOAD_DATA = 'load-data';
 
 /**
+ * This will store a "map" linking buttons and actions
  * @private 
  * @properties={typeid:35,uuid:"2F32C22C-9D79-4E58-9963-4F6A09408A8F",variableType:-4}
  */
 var m_ButtonActionMap = { };
 
 /**
+ * This form variable can be used to display on the example forms information about the policy configuration
  * @protected 
  * @type {String}
  *
@@ -100,6 +104,7 @@ function loadData() {
 }
 
 /**
+ * Builds a dynamic buttons toolbar on the form
  * Note: this method calls controller.recreateUI()
  * @private
  * @properties={typeid:24,uuid:"60A76C0E-9AE8-4390-9727-D2051865CEB9"}
@@ -146,6 +151,7 @@ function buildToolbar() {
 }
 
 /**
+ * Listener for property changes of the form actions.
  * @properties={typeid:24,uuid:"5114538E-3230-4096-A3A5-7F4B007353C2"}
  * @private 
  * @param {{propertyName: String, oldValue, newValue, source: scopes.svyActionManager.FormAction}} arg
@@ -162,6 +168,7 @@ function handleActionPropChange(arg) {
 }
 
 /**
+ * This method removes the registered action property change listeners when the form is unloaded
  * @protected
  * @properties={typeid:24,uuid:"636E913E-6944-4988-A438-C3BB8FF5EFA1"}
  */
@@ -176,7 +183,7 @@ function removeActionPropChangeListeners(){
 }
 
 /**
- * Callback method when form is (re)loaded.
+ * Method override to handle custom code when form is (re)loaded.
  * @override
  * @protected
  *
@@ -190,7 +197,7 @@ function initializingForm() {
 }
 
 /**
- * Callback method when form is unloaded.
+ * Method override to handle custom code when form is unloaded.
  * @override
  * @protected
  *
@@ -201,6 +208,7 @@ function uninitializingForm() {
 }
 
 /**
+ * Method override to handle custom code when the form UI is being updated.
  * @override
  * @protected
  * @properties={typeid:24,uuid:"32A775D6-BD16-4A98-9E79-DBDA6FAA665C"}
@@ -230,6 +238,7 @@ function updatingUI() {
 }
 
 /**
+ * Method override to handle custom code when there are errors during "Save" action
  * @override 
  * @protected
  * @param {scopes.svyDataUtils.SaveDataFailedException} error
@@ -246,6 +255,7 @@ function onSaveError(error) {
 }
 
 /**
+ * Method override to handle custom code when there are errors during "Delete" action
  * @override 
  * @protected
  * @param {scopes.svyDataUtils.DeleteRecordFailedException} error
@@ -262,6 +272,7 @@ function onDeleteError(error) {
 }
 
 /**
+ * Custom method to get example form policy configuration information.
  * @public  
  * @return {String}
  * @properties={typeid:24,uuid:"B823D0A5-9610-4C22-AE32-8DA781D8EE0A"}
@@ -273,6 +284,7 @@ function getPolicyInfo(){
 }
 
 /**
+ * Custom method which combines updating of both standard and custom form actions
  * @protected 
  * @properties={typeid:24,uuid:"3E405BFA-CD00-4AAB-9C68-BDAA4C8161A0"}
  */
