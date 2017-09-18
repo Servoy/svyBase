@@ -1,26 +1,38 @@
 /**
+ * Enumeration for the available [levels]{@link ValidationMarker#getLevel} of the {@link ValidationMarker}.
  * @public 
  * @enum 
  * @properties={typeid:35,uuid:"599E5630-3C48-4DE2-B300-F03653754BEB",variableType:-4}
  */
 var VALIDATION_LEVEL = {
+    /**
+     * Information validation level. 
+     */
 	INFO:'info',
+	/**
+	 * Warning validation level.
+	 */
 	WARN:'warn',
+	/**
+	 * Error validation level.
+	 */
 	ERROR:'error'
 }
 
 /**
+ * Gets a list with the available validation providers for the specified dataSource.
+ * The validation providers must extend the base svyAbstractValidationProvider class.
  * @public 
- * @param {String|JSRecord|JSFoundSet|RuntimeForm} dataSource
- * @return {Array<RuntimeForm<AbstractValidationProvider>>}
+ * @param {String|JSRecord|JSFoundSet|RuntimeForm} dataSource The dataSource to check.
+ * @return {Array<RuntimeForm<svyAbstractValidationProvider>>} The list of available validation providers or an empty array if no validation providers are available for the specified dataSource.
  * @properties={typeid:24,uuid:"C38387AE-6E94-4077-830C-5175D7ECE737"}
  */
 function getValidationProviders(dataSource){
 	
 	var providersForDataSource = [];
-	var providers = scopes.svyUI.getRuntimeFormInstances(forms.AbstractValidationProvider);
+	var providers = scopes.svyUI.getRuntimeFormInstances(forms.svyAbstractValidationProvider);
 	for(var i in providers){
-		/** @type {RuntimeForm<AbstractValidationProvider>} */
+		/** @type {RuntimeForm<svyAbstractValidationProvider>} */
 		var provider = providers[i];
 		//TODO use scopes.svyDataUtils.getDataSource when it is available
 		//if(provider.isDataSourceSupported(scopes.svyDataUtils.getDataSource(dataSource))){
@@ -33,6 +45,7 @@ function getValidationProviders(dataSource){
 
 /**
  * TODO use scopes.svyDataUtils.getDataSource when it is available
+ * @private 
  * @param {String|JSRecord|JSFoundSet|RuntimeForm} dataSource
  * @return {String}
  * @properties={typeid:24,uuid:"9797B720-FA33-4BE4-B94D-5E0E8AAE39D9"}
@@ -50,9 +63,11 @@ function getDataSource(dataSource) {
 }
 
 /**
+ * This method validates the specified record combining validation information from all available validation providers for the record's dataSource.
+ * Note that the result list may contain not only validation errors but validation markers with information and/or warning levels as well. Use the {@link ValidationMarker#getLevel} to determine the level of the individual validation markers in the result.
  * @public
- * @param {JSRecord} record
- * @return {Array<ValidationMarker>}
+ * @param {JSRecord} record The record to validate.
+ * @return {Array<ValidationMarker>} A list of resulting [validation markers]{@link ValidationMarker} or an empty array if no validation results are available.
  * @properties={typeid:24,uuid:"7364F9BF-D861-4F01-B553-6E3DAFD26555"}
  */
 function validate(record){

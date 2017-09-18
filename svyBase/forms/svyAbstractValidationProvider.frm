@@ -8,7 +8,7 @@ typeid:19,
 uuid:"FCCFE5B3-8752-45E5-9839-CBF9A0110B28"
 }
 ],
-name:"AbstractValidationProvider",
+name:"svyAbstractValidationProvider",
 showInMenu:true,
 typeid:3,
 uuid:"7E9AC638-B45D-4B4F-8911-1FF5869E81DC"
