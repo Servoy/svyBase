@@ -85,8 +85,8 @@ function FormAction(name, targetForm, handler, isToggle) {
     this.getHandler = function() {
         if (handler instanceof Function) {
             /**
-             * @private  
              * @type {Function} 
+             * @ignore  
              */
             var method = handler;
             return scopes.svySystem.convertServoyMethodToQualifiedName(method);
@@ -114,8 +114,8 @@ function FormAction(name, targetForm, handler, isToggle) {
      */
     this.getText = function() {
         /**
-         * @private  
          * @type {String} 
+         * @ignore  
          */
         var value = this.getProperty(this.PROPERTIES.TEXT);
         return value;
@@ -140,8 +140,8 @@ function FormAction(name, targetForm, handler, isToggle) {
      */
     this.getTooltipText = function() {
         /**
-         * @private  
-         * @type {String} 
+         * @type {String}
+         * @ignore 
          */
         var value = this.getProperty(this.PROPERTIES.TOOLTIP_TEXT);
         return value;
@@ -166,8 +166,8 @@ function FormAction(name, targetForm, handler, isToggle) {
      */
     this.isEnabled = function() {
         /** 
-         * @private
-         * @type {Boolean} 
+         * @type {Boolean}
+         * @ignore 
          */
         var value = this.getProperty(this.PROPERTIES.ENABLED);
         return value;
@@ -192,8 +192,8 @@ function FormAction(name, targetForm, handler, isToggle) {
      */
     this.isVisible = function() {
         /**
-         * @private  
-         * @type {Boolean} 
+         * @type {Boolean}
+         * @ignore 
          */
         var value = this.getProperty(this.PROPERTIES.VISIBLE);
         return value;
@@ -218,8 +218,8 @@ function FormAction(name, targetForm, handler, isToggle) {
      */
     this.isSelected = function() {
         /**
-         * @private  
-         * @type {Boolean} 
+         * @type {Boolean}
+         * @ignore 
          */
         var value = this.getProperty(this.PROPERTIES.SELECTED);
         return value;
@@ -240,8 +240,8 @@ function FormAction(name, targetForm, handler, isToggle) {
         }
 
         /**
-         * @private  
-         * @type {Function} 
+         * @type {Function}
+         * @ignore 
          */
         var event = new ActionEvent(name, targetForm, sourceEvent);
         try {
