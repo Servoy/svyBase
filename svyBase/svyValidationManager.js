@@ -105,7 +105,7 @@ function canDelete(record){
  * @constructor 
  * @param {JSRecord} record The record for which the validation result applies.
  * @param {String} message The validation result message text.
- * @param {String} [level] Optional validation result level. If not specified will use {@link VALIDATION_LEVEL#ERROR}.
+ * @param {String} [level] Optional validation result level. If not specified will use {@link VALIDATION_LEVEL}.ERROR.
  * @param {String} [dataProvider] Optional dataProvider name for which the validation result applies. If provided this usually is a column name.
  * @properties={typeid:24,uuid:"24E0FAA7-5ADF-40BB-9F60-213373546243"}
  */
