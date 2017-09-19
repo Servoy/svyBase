@@ -735,7 +735,7 @@ function track(records) {
     } else {
         /** @type {JSRecord} */
         var record = records;
-        if (record.hasChangedData() && m_Tracking.indexOf(record) == -1) {
+        if (m_Tracking.indexOf(record) == -1) {
             m_Tracking.push(record);
 
             //	TODO Fire special tracking event ?
@@ -873,9 +873,7 @@ function getEditedRecords() {
         }
         case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.AUTO: {
             for (var i in m_Tracking) {
-                if (m_Tracking[i].hasChangedData() || m_Tracking[i].isNew()) {
-                    records.push(m_Tracking[i]);
-                }
+                records.push(m_Tracking[i]);                
             }
             break;
         }

@@ -26,6 +26,15 @@ function validate(record) {
         }
     }
 
+    if (record.quantity == null) {
+        result.push(new scopes.svyValidationManager.ValidationMarker(record, 'Quantity is required.', scopes.svyValidationManager.VALIDATION_LEVEL.ERROR, 'quantity'));
+    }
+    if (record.unitprice == null) {
+        result.push(new scopes.svyValidationManager.ValidationMarker(record, 'Price is required.', scopes.svyValidationManager.VALIDATION_LEVEL.ERROR, 'unitprice'));
+    }
+    if (record.discount == null) {
+        result.push(new scopes.svyValidationManager.ValidationMarker(record, 'Discount is required.', scopes.svyValidationManager.VALIDATION_LEVEL.ERROR, 'discount'));
+    }
     return result;
 }
 

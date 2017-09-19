@@ -77,11 +77,27 @@ function onActionRemoveDetail(event) {
 function addOrderDetail(){
     var orderRec = foundset.getSelectedRecord();
     if (orderRec){
+        var selectedProductKey = forms.productSelectionDialog.showProductSelectionDialog();
+        if (selectedProductKey == null){
+            return;
+        }
+        
         var dtlFS = orderRec.orders_to_order_details;
+        for (var index = 1; index <= dtlFS.getSize(); index++) {
+            if (dtlFS.getRecord(index).productid == selectedProductKey) {
+                plugins.dialogs.showInfoDialog('Duplicate Product','An order detail with the selected product already exists.');
+                return;
+            }            
+        }
+        
         var detailRec = dtlFS.getRecord(dtlFS.newRecord(false,true));
         
-        //TODO: attempt to work around the Servoy bug https://support.servoy.com/browse/SVY-11581
-        detailRec.productid = dtlFS.getSize(); 
+        
+        //TODO: work around the Servoy bug https://support.servoy.com/browse/SVY-11581
+        detailRec.productid = selectedProductKey;
+        detailRec.quantity = 0;
+        detailRec.unitprice = 0;
+        detailRec.discount = 0;
         
         //we need to track the detail records as part of the "work batch scope"
         track(detailRec);
@@ -112,7 +128,10 @@ function markSelectedOrderDetailForDeletion(){
             selectedDetailRec.revertChanges();            
             m_DetailsSelectedForDeletion.push(selectedDetailRec.getPKs());
             //this will ensure that the detail selected for deletion is removed from the UI
-            orderRec.orders_to_order_details.omitRecord();            
+            orderRec.orders_to_order_details.omitRecord();
+            //need to have at least one record in the "tracked" batch of work in order to be able to proceed with the save operation
+            //in this case we simply add the header order record even if it does not have any changes (the save will then just skip it)
+            track(orderRec);
         }
         
         //TODO: "untrack" the detail rec to be deleted

@@ -29,12 +29,12 @@ uuid:"57B3C7BA-0051-4707-9A4F-039AD7A232AF"
 },
 {
 dataProviderID:"productid",
-displayType:2,
+displayType:10,
 editable:false,
+enabled:false,
 location:"7,37",
 name:"productid",
 size:"254,30",
-transparent:true,
 typeid:4,
 uuid:"75C9CDB4-C284-4AC9-A2E7-82AE1C704DF0",
 valuelistID:"D85AC2BB-A230-4D87-9B6F-E771351922A9"
@@ -53,6 +53,7 @@ uuid:"8536FFDC-A40D-441E-A64B-8DDCF359165E"
 {
 dataProviderID:"subtotal",
 editable:false,
+enabled:false,
 format:"¤#.00",
 horizontalAlignment:4,
 location:"646,37",
