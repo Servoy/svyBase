@@ -110,7 +110,7 @@ function addAction(name, handler, isToggle) {
 
 /**
  * This method initiates the update of the user interface of this form.
- * It is recommended that extending forms do not override this method. Instead they should override the dedicated {@link svyBase#updatingUI} method to add custom code for updating of the UI.
+ * It is recommended that extending forms do not override this method. Instead they should override the dedicated {@link updatingUI} method to add custom code for updating of the UI.
  * @protected
  * @properties={typeid:24,uuid:"F0266C36-3862-4956-BCB5-A81B97CD84CA"}
  */
@@ -120,9 +120,9 @@ function updateUI() {
 
 /**
  * Provides internal handling of the event fired after users change data in form fields.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * In NGClient you can return also a (i18n) string, instead of false, which will be shown as a tooltip on the respective UI field.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#fieldValueChanged} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link fieldValueChanged} method.
  * @protected
  * @param oldValue old value
  * @param newValue new value
@@ -152,8 +152,9 @@ function onElementDataChange(oldValue, newValue, event) {
 
 /**
  * Provides internal handling to the record selection event.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#dataContextChanged} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link dataContextChanged} method.
+ * 
  * @protected
  * @param {JSEvent} event The event that triggered the action.
  *
@@ -170,8 +171,8 @@ function onRecordSelection(event) {
 
 /**
  * Provides internal handling to the event fired when the form is shown.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#displayingForm} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link displayingForm} method.
  *
  * @protected
  * @param {Boolean} firstShow True if the form is shown for the first time after load.
@@ -187,7 +188,7 @@ function onShow(firstShow, event) {
 
 /**
  * Provides internal handling to the event fired when an element on the form has gained focus.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
  * @protected
  * @param {JSEvent} event The event that triggered the action.
@@ -202,7 +203,7 @@ function onElementFocusGained(event) {
 
 /**
  * Provides internal handling to the event fired when an element on the form has lost focus.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
  * @protected
  * @param {JSEvent} event The event that triggered the action.
@@ -218,13 +219,13 @@ function onElementFocusLost(event) {
 
 /**
  * Provides internal handling to the event fired when the form window is hiding.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#hidingForm} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link hidingForm} method.
  * 
  * @protected
  * @param {JSEvent} event The event that triggered the action.
  *
- * @return {Boolean}
+ * @return {Boolean} True if the form can be hidden, false to block the action so the form will remain visible.
  *
  * @properties={typeid:24,uuid:"F2F39B1A-2DDC-4F8D-ACD4-20E8627AD397"}
  */
@@ -237,11 +238,11 @@ function onHide(event) {
 
 /**
  * Provides internal handling to the event fired when the form is (re)loaded.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#initializingForm} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link initializingForm} method.
  * 
  * @protected
- * @param {JSEvent} event the event that triggered the action
+ * @param {JSEvent} event the event that triggered the action.
  *
  * @properties={typeid:24,uuid:"91BEB20C-902E-491D-820C-246EB85E8A51"}
  */
@@ -251,7 +252,7 @@ function onLoad(event) {
 
 /**
  * Provides internal handling to the event fired when the user starts to edit a record on the form.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
  * @protected
  * @param {JSEvent} event The event that triggered the action.
@@ -268,7 +269,7 @@ function onRecordEditStart(event) {
 
 /**
  * Provides internal handling to the event fired when the user stops editing a record on the form.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
  * @protected
  * @param {JSRecord} record The record being edited.
@@ -285,7 +286,7 @@ function onRecordEditStop(record, event) {
 
 /**
  * Provides internal handling to the event fired when the form is resized.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
  * @protected
  * @param {JSEvent} event The event that triggered the action.
@@ -299,8 +300,8 @@ function onResize(event) {
 
 /**
  * Provides internal handling to the event fired when the form is about to be unloaded.
- * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#uninitializingForm} method.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link uninitializingForm} method.
  * 
  * @protected
  * @param {JSEvent} event The event that triggered the action.
@@ -319,7 +320,7 @@ function onUnload(event) {
  * @private
  * @param {JSEvent} event The event which triggered the source action.
  * @param {String} bubbleEventType One of the BUBBLE_EVENT_TYPES enum values.
- * @return {Boolean} False if the parent blocked the event by returning false from its {@link svyBase#onEventBubble} method.
+ * @return {Boolean} False if the parent blocked the event by returning false from its {@link onEventBubble} method.
  * 
  * @properties={typeid:24,uuid:"83976541-2B87-4AA1-8040-76D0D53EEAF4"}
  */
@@ -377,7 +378,7 @@ function dataContextChanged() {
 }
 
 /**
- * Called as part of the custom {@link svyBase#onLoad) event handling.
+ * Called as part of the custom {@link onLoad) event handling.
  * Intended for usage by extending forms which can override it as needed to perform any form initialization tasks when the form is (re)loaded.
  * 
  * @protected
@@ -388,7 +389,7 @@ function initializingForm() {
 }
 
 /**
- * Called as part of the custom {@link svyBase#onUnload) event handling.
+ * Called as part of the custom {@link onUnload) event handling.
  * Intended for usage by extending forms which can override it as needed to perform any form uninitialization tasks when the form is unloaded.
  * 
  * @protected
@@ -399,7 +400,7 @@ function uninitializingForm() {
 }
 
 /**
- * Called as part of the custom {@link svyBase#onShow) event handling.
+ * Called as part of the custom {@link onShow) event handling.
  * Intended for usage by extending forms which can override it as needed to perform any tasks when the form is dispayed.
  * 
  * @protected
@@ -412,7 +413,7 @@ function displayingForm(firstShow) {
 }
 
 /**
- * Called as part of the custom {@link svyBase#onHide} event handling.
+ * Called as part of the custom {@link onHide} event handling.
  * Intended for usage by extending forms which can override it as needed to perform any tasks when the form hiding.
  * 
  * @protected
@@ -438,7 +439,7 @@ function updatingUI() {
 }
 
 /**
- * Called as part of the custom {@link svyBase#onElementDataChange} event handling.
+ * Called as part of the custom {@link onElementDataChange} event handling.
  * Intended for usage by extending forms which can override it as needed to perform any tasks when the data in a field on the form is changed.
  *
  * @protected

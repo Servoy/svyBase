@@ -134,7 +134,8 @@ function markSelectedOrderDetailForDeletion(){
             track(orderRec);
         }
         
-        //TODO: "untrack" the detail rec to be deleted
+        //"untrack" the detail rec from the edited records as it will be deleted
+        untrack(selectedDetailRec);
                 
         updateActionsState();
     }
