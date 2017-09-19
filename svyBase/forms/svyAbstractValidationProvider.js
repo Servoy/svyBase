@@ -24,7 +24,7 @@ function canDelete(record){
  * Method which is used by the system to discover all validation providers for the specified datasource.
  * @public 
  * @param {String} dataSource The datasource to check.
- * @return {Boolean} true if the validation provider supports the specified datasource
+ * @return {Boolean} True if the validation provider supports the specified datasource
  * @properties={typeid:24,uuid:"3BAA3242-678B-4220-88F9-893208EF7731"}
  */
 function isDataSourceSupported(dataSource){
