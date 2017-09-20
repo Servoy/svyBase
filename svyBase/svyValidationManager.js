@@ -110,7 +110,14 @@ function canDelete(record){
  * @properties={typeid:24,uuid:"24E0FAA7-5ADF-40BB-9F60-213373546243"}
  */
 function ValidationMarker(record, message, level, dataProvider){
+	if (!record){
+	    throw new Error('Record is not specified');
+	}
 	
+	if (!message){
+        throw new Error('Message is not specified');
+    }
+    
 	/**
 	 * Gets the record for which the validation result applies.
 	 * @public 
@@ -153,6 +160,6 @@ function ValidationMarker(record, message, level, dataProvider){
 	 * @return {String} The dataProvider name, if available.
 	 */
 	this.getDataProvider = function(){
-		return dataProvider;
+		return dataProvider ? dataProvider : null;
 	}
 }
