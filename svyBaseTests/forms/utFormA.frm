@@ -1,0 +1,15 @@
+customProperties:"formComponent:false",
+dataSource:"db:/example_data/categories",
+extendsID:"BC98FB44-E326-44B9-9BBB-E6DA66FC79E5",
+items:[
+{
+height:100,
+partType:5,
+typeid:19,
+uuid:"33F897A3-A2DF-41D9-974F-FAB59687FF82"
+}
+],
+name:"utFormA",
+navigatorID:"-1",
+typeid:3,
+uuid:"BD44145E-B990-47F1-A21A-1BD511D0A970"

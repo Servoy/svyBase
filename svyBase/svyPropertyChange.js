@@ -31,7 +31,7 @@ function PropertyChangeSupport(object) {
      * Adds a listener which should be notified whenever the value of a property in the source object is changed.
      * All registered listeners must be removed using the method {@link PropertyChangeSupport#removeListener}. 
      * @public
-     * @param {Function} listener The callback function to call whenever a property change event is fired. The callback function will receive an input argument object with the following properties: {propetyName: String, oldValue, newValue, source}
+     * @param {Function} listener The callback function to call whenever a property change event is fired. The callback function will receive an input argument object with the following properties: {propertyName: String, oldValue, newValue, source}
      * @param {String} [propertyName] Optional property name if the listener should be notified only if this specific property is changed. If not specified the listener will be notified when any property in the source object is changed.
      */
     this.addListener = function(listener, propertyName) {

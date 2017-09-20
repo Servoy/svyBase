@@ -169,7 +169,7 @@ function FormAction(name, targetForm, handler, isToggle) {
          * @type {Boolean}
          * @ignore 
          */
-        var value = this.getProperty(this.PROPERTIES.ENABLED);
+        var value = (this.getProperty(this.PROPERTIES.ENABLED) === true);
         return value;
     }
 
@@ -195,7 +195,7 @@ function FormAction(name, targetForm, handler, isToggle) {
          * @type {Boolean}
          * @ignore 
          */
-        var value = this.getProperty(this.PROPERTIES.VISIBLE);
+        var value = (this.getProperty(this.PROPERTIES.VISIBLE) === true);
         return value;
     }
 
@@ -221,7 +221,7 @@ function FormAction(name, targetForm, handler, isToggle) {
          * @type {Boolean}
          * @ignore 
          */
-        var value = this.getProperty(this.PROPERTIES.SELECTED);
+        var value = (this.getProperty(this.PROPERTIES.SELECTED) === true);
         return value;
     }
 
@@ -289,7 +289,7 @@ function FormAction(name, targetForm, handler, isToggle) {
      * Method to register a property change listener function which will be called when a FormAction property value is changed.
      * Note that any registered property change listeners must be unregistered/removed using the {@link FormAction#removePropertyChangeListener} method.
      * @public
-     * @param {Function} listener The function which should be called when a property value is changed.
+     * @param {Function} listener The function which should be called when a property value is changed. The callback function will receive an input argument object with the following properties: {propertyName: String, oldValue, newValue, source}
      * @param {String} [propertyName] Optional property name if the listener function should be called only when the specified property is changed. If not specified then the listener function will be called for any property change.
      */
     this.addPropertyChangeListener = function(listener, propertyName) {
@@ -307,6 +307,12 @@ function FormAction(name, targetForm, handler, isToggle) {
     this.removePropertyChangeListener = function(listener, propertyName) {
         this.propertyChangeSupport.removeListener(listener, propertyName);
     }
+    
+    this.putProperty(this.PROPERTIES.ENABLED, false);
+    this.putProperty(this.PROPERTIES.SELECTED, false);
+    this.putProperty(this.PROPERTIES.VISIBLE, false);
+    this.putProperty(this.PROPERTIES.TEXT, name);
+    this.putProperty(this.PROPERTIES.TOOLTIP_TEXT, null);
 }
 
 /**
