@@ -76,7 +76,7 @@ var m_ActionMap = { };
 function getAction(name) {
     /** @type {scopes.svyActionManager.FormAction} */
     var action = m_ActionMap[name];
-    return action;
+    return action || null;
 }
 
 /**
@@ -248,6 +248,7 @@ function onHide(event) {
  */
 function onLoad(event) {
     initializingForm();
+    bubble(event, BUBBLE_EVENT_TYPES.FORM_LOAD);
 }
 
 /**
