@@ -45,6 +45,31 @@ var m_FailCreateNewRecord = false;
 var m_BeforeCancelResult = true;
 
 /**
+ * @properties={typeid:35,uuid:"CF0630E1-A6FD-43F2-8C60-A0AC553A8042",variableType:-4}
+ */
+var m_BeforeSaveResult = true;
+
+/**
+ * @properties={typeid:35,uuid:"E4E7F4BB-9706-42DA-AB83-C6D139213117",variableType:-4}
+ */
+var m_FailSaveValidatedRecords = false;
+
+/**
+ * @properties={typeid:35,uuid:"EF60EA32-9FA2-42CF-81AA-5572831BF273",variableType:-4}
+ */
+var m_ConfirmDeleteResult = true;
+
+/**
+ * @properties={typeid:35,uuid:"D211D5E5-3EC0-4295-9E80-27C1F852BF37",variableType:-4}
+ */
+var m_BeforeDeleteResult = true;
+
+/**
+ * @properties={typeid:35,uuid:"8CA6D6B8-F328-4594-9152-D21B688A4154",variableType:-4}
+ */
+var m_FailDeleteValidatedRecords = false;
+
+/**
  * @public
  * @param {Function} callback
  *
@@ -99,6 +124,11 @@ function resetMockupResults(){
     m_BeforeNewRecordResult = true;
     m_FailCreateNewRecord = false;
     m_BeforeCancelResult = true;
+    m_BeforeSaveResult = true;
+    m_FailSaveValidatedRecords = false;
+    m_ConfirmDeleteResult = true;
+    m_BeforeDeleteResult = true;
+    m_FailDeleteValidatedRecords = false;
 }
 
 /*========================================================================*/
@@ -343,6 +373,157 @@ function afterCancel() {
     logCall('afterCancel', arguments);    
 }
 
+/**
+ * @override 
+ * @protected 
+ * @param {Array<JSRecord>} records The validated records which must be saved in the database.
+ * @throws {Error} If any record could not be saved and the database transaction needs to be rolled back.
+ * 
+ * @properties={typeid:24,uuid:"2AACBF8A-2B54-4C37-99A9-2AB31D3CB540"}
+ */
+function saveValidatedRecords(records){
+    logCall('saveValidatedRecords', arguments);    
+    if (m_FailSaveValidatedRecords){
+        throw new Error('TestFailSaveValidatedRecords');
+    }
+    _super.saveValidatedRecords(records);
+}
+
+/**
+ * @override 
+ * @protected
+ * @param {Array<JSRecord>} records The records to be saved.
+ * @return {Boolean} True (default) if the delete operation can proceed, false to cancel the delete operation.
+ *
+ * @properties={typeid:24,uuid:"A976BC01-199A-4051-B1EF-E96104870389"}
+ */
+function beforeSave(records) {
+    logCall('beforeSave', arguments);    
+    return m_BeforeSaveResult;
+}
+
+/**
+ * @override 
+ * @protected
+ * 
+ * @properties={typeid:24,uuid:"5BE15788-948E-46A8-91A9-1ED73A8EAA21"}
+ */
+function afterSave() { 
+    logCall('afterSave', arguments);        
+}
+
+/**
+ * @override 
+ * @protected
+ * @param {scopes.svyDataUtils.SaveDataFailedException} error Custom exception object containing information about the particular error.
+ * 
+ * @properties={typeid:24,uuid:"D04E6B6E-14D5-4245-8D6D-AD0B424B5D99"}
+ */
+function onSaveError(error) { 
+    logCall('onSaveError', arguments);            
+}
+
+/**
+ * @override 
+ * @protected
+ * @param {Array<JSRecord>} records The records to validate.
+ * @return {Array<scopes.svyValidationManager.ValidationMarker>} Validation markers containing any validation results (errors, warnings, info) or an empty array.
+ * 
+ * @properties={typeid:24,uuid:"3B4D2297-FD69-4FD2-8547-EDF93CBD572D"}
+ */
+function validate(records) {
+    logCall('validate', arguments);        
+    return _super.validate(records);
+}
+
+/**
+ * @override 
+ * @protected
+ * @param {Array<JSRecord>} records The records which will be deleted.
+ * @return {Boolean} True if the delete operation is confirmed and can proceed.
+ * 
+ * @properties={typeid:24,uuid:"D8C07B76-057B-49FC-B08E-7FF5E82A3115"}
+ */
+function confirmDelete(records) {
+    logCall('confirmDelete', arguments);        
+    return m_ConfirmDeleteResult;
+}
+
+/**
+ * @override 
+ * @protected
+ * @param {Array<JSRecord>} records The records to be deleted.
+ * @return {Boolean} True (default) if the delete operation can proceed, false to cancel the delete operation.
+ *
+ * @properties={typeid:24,uuid:"8DADA99D-2BD8-470F-AC5F-EA9097659427"}
+ */
+function beforeDelete(records) {
+    logCall('beforeDelete', arguments);        
+    return m_BeforeDeleteResult;
+}
+
+/**
+ * @override 
+ * @protected
+ * @param {Array<JSRecord>} records The records to validate that can be deleted.
+ * @return {Array<scopes.svyValidationManager.ValidationMarker>} Validation markers containing any validation results (errors, warnings, info) or an empty array.
+ * 
+ * @properties={typeid:24,uuid:"4DC9FA3C-AC6A-4407-9B7D-8105CF0F0EFE"}
+ */
+function canDelete(records) {
+    logCall('canDelete', arguments);        
+    return _super.canDelete(records);
+}
+
+/**
+ * @override 
+ * @protected 
+ * @param {Array<JSRecord>} records The validated records which must be deleted.
+ * @throws {Error} If any record could not be deleted and the database transaction needs to be rolled back.
+ *
+ * @properties={typeid:24,uuid:"D0088AE4-F32D-4E83-A481-2BAD24F94836"}
+ */
+function deleteValidatedRecords(records){
+    logCall('deleteValidatedRecords', arguments);
+    if (m_FailDeleteValidatedRecords){
+        throw new Error('TestFailDeleteValidatedRecords');
+    }
+    _super.deleteValidatedRecords(records);
+}
+
+/**
+ * @override 
+ * @protected
+ * @param {scopes.svyDataUtils.DeleteRecordFailedException} error Custom exception object containing information about the particular error.
+ * 
+ * @properties={typeid:24,uuid:"0EE8DDE4-D8D5-4ED9-B84F-47F6E4CD7F86"}
+ */
+function onDeleteError(error) { 
+    logCall('onDeleteError', arguments);    
+}
+
+/**
+ * @override 
+ * @protected
+ * @param {JSRecord|Array<JSRecord>|JSFoundSet} records The record(s) which should not be tracked anymore by the batch scope of this form.
+ *
+ * @properties={typeid:24,uuid:"90C03AD0-43EC-483C-994C-9F5751B16B6D"}
+ */
+function untrack(records) {
+    logCall('untrack', arguments);    
+    _super.untrack(records);    
+}
+
+/**
+ * @override 
+ * @protected
+ * 
+ * @properties={typeid:24,uuid:"70EB7579-5E5B-4BB6-97BE-699BA50855E7"}
+ */
+function afterDelete() { 
+    logCall('afterDelete', arguments);    
+}
+
 /*===================================================================*/
 /* The following overrides simply expose protected methods as public */
 /*===================================================================*/
@@ -524,4 +705,79 @@ function newRecord() {
  */
 function cancel() {
     return _super.cancel();
+}
+
+/**
+ * @override 
+ * @public
+ * @return {Boolean} True if all records were saved.
+ *  
+ * @properties={typeid:24,uuid:"97AB0447-DEEE-4F61-B991-7387EEED40E4"}
+ */
+function save() {
+    return _super.save();
+}
+
+/**
+ * @override 
+ * @public
+ * @return {Boolean} True if the record was deleted.
+ * 
+ * @properties={typeid:24,uuid:"75F971F4-8F62-45A2-9774-418C6E7ED954"}
+ */
+function deleteSelectedRecords() {
+    return _super.deleteSelectedRecords();
+}
+
+/**
+ * @override 
+ * @public
+ * @return {Boolean} True if the next record was selected.
+ * 
+ * @properties={typeid:24,uuid:"73F368CB-E3AA-4B02-83EA-08DBA91D80C7"}
+ */
+function selectNextRecord() {
+    return _super.selectNextRecord();
+}
+
+/**
+ * @override 
+ * @public
+ * @return {Boolean} True if the previous record was selected.
+ * 
+ * @properties={typeid:24,uuid:"55646ADD-AB68-4FD8-A624-828133E6E5C9"}
+ */
+function selectPreviousRecord() {
+    return _super.selectPreviousRecord();
+}
+
+/**
+ * @override 
+ * @public
+ * @return {Boolean} True if the first record was selected.
+ * 
+ * @properties={typeid:24,uuid:"F6589932-CEB5-469C-8FF9-0B2AFD2E32DA"}
+ */
+function selectFirstRecord() {
+    return _super.selectFirstRecord();
+}
+
+/**
+ * @override 
+ * @public
+ * @return {Boolean} True if the last record was selected.
+ * 
+ * @properties={typeid:24,uuid:"29429814-65F9-4D3D-A189-A03AD8FA005C"}
+ */
+function selectLastRecord() {
+    return _super.selectLastRecord();
+}
+
+/**
+ * @override 
+ * @public
+ * @properties={typeid:24,uuid:"9F205BC6-AA21-44B4-9594-9189F796E646"}
+ */
+function updateStandardFormActionsState(){
+    _super.updateStandardFormActionsState();
 }

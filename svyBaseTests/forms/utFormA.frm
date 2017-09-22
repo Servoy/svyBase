@@ -10,6 +10,7 @@ uuid:"33F897A3-A2DF-41D9-974F-FAB59687FF82"
 }
 ],
 name:"utFormA",
+namedFoundSet:"separate",
 navigatorID:"-1",
 typeid:3,
 uuid:"BD44145E-B990-47F1-A21A-1BD511D0A970"

@@ -694,7 +694,7 @@ function selectNextRecord() {
     }
 
     // move selection
-    foundset.setSelectedIndex(foundset.getSelectedIndex() + 1);
+    controller.setSelectedIndex(foundset.getSelectedIndex() + 1);
 
     return true;
 }
@@ -724,7 +724,7 @@ function selectPreviousRecord() {
     }
 
     // move selection
-    foundset.setSelectedIndex(foundset.getSelectedIndex() - 1);
+    controller.setSelectedIndex(foundset.getSelectedIndex() - 1);
 
     return true;
 }
@@ -753,7 +753,7 @@ function selectFirstRecord() {
     }
 
     // move selection
-    foundset.setSelectedIndex(1);
+    controller.setSelectedIndex(1);
 
     return true;
 }
@@ -782,7 +782,7 @@ function selectLastRecord() {
     }
 
     // move selection
-    foundset.setSelectedIndex(foundset.getSize());
+    controller.setSelectedIndex(foundset.getSize());
 
     return true;
 }
@@ -853,6 +853,7 @@ function onElementDataChange(oldValue, newValue, event) {
         updateUI();
     }
 }
+
 /**
  * Remove record(s) from the batch scope tracking controlled by this form when the batch scope [policy]{@link getCrudPolicies} is set to AUTO.
  * The records should have been added to the batch scope using the {@link track} method.
@@ -1205,12 +1206,14 @@ function onRecordSelection(event) {
                 throw new Error('Invalid form state - the foundset of the form was replaced with a different foundset while there were pending changes and the record selection policy does not allow record selection changes when editing records.');
             }
 
+            //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
             foundset.setSelectedIndex(foundset.getRecordIndex(m_LastSelectedRecord));
             if (!beforeMoveRecord()) {
                 return;
             }
             m_LastSelectedRecord = selRec;
             if (selRec) {
+                //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
                 foundset.setSelectedIndex(foundset.getRecordIndex(selRec));
             }
         }

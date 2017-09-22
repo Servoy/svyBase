@@ -18,6 +18,7 @@ uuid:"851C44B8-C3E2-4BEB-88D0-AAE16269D19B"
 }
 ],
 name:"utFormBaseCRUDExt",
+namedFoundSet:"separate",
 navigatorID:"-1",
 size:"268,100",
 typeid:3,
