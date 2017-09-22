@@ -135,6 +135,7 @@ function onUserLeave() {
  * Standard form action to create a new record. 
  * As part of the new record action flow the following methods will be executed in the specified order allowing extending forms to perform additional custom tasks: 
  * - {@link beforeNewRecord}
+ * - {@link createNewRecord}
  * - {@link afterNewRecord}
  * 
  * Creating a new record can be blocked by returning false in {@link beforeNewRecord}.
@@ -162,14 +163,9 @@ function newRecord() {
      */
     var newRec = null;
     try {
-
-        // create record;
-        var newRecIndex = foundset.newRecord();
-
-        if (newRecIndex == -1) {
-            throw new scopes.svyDataUtils.NewRecordFailedException('New Record Failed', foundset);
-        }
-        newRec = foundset.getRecord(newRecIndex);
+        // create record;        
+        newRec = createNewRecord();
+        
     } catch (e) {
         // notify on-error
         /** @type {scopes.svyDataUtils.NewRecordFailedException} */
@@ -386,6 +382,22 @@ function onDeleteError(error) { }
  */
 function beforeNewRecord() {
     return true;
+}
+
+/**
+ * @protected 
+ * @return {JSRecord}
+ * @properties={typeid:24,uuid:"E247A95A-1839-41F3-9EE7-B234AC19B1F4"}
+ */
+function createNewRecord(){
+    // create record;
+    var newRecIndex = foundset.newRecord();
+
+    if (newRecIndex == -1) {
+        throw new scopes.svyDataUtils.NewRecordFailedException('New Record Failed', foundset);
+    }
+    
+    return foundset.getRecord(newRecIndex);
 }
 
 /**
