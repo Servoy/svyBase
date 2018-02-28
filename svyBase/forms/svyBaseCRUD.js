@@ -951,7 +951,7 @@ function clearTracking() {
 /**
  * Used in the data change event handlers to add the applicable records to the batch scope.
  * 
- * @private
+ * @protected
  * @param {JSEvent} event The source event that has triggered the action.
  * 
  * @properties={typeid:24,uuid:"5CD3C129-C26C-41DC-B3D2-440FCBCA6CB7"}
@@ -967,8 +967,11 @@ function trackDataChange(event) {
     //	TODO Move functionality to svyUtils or svyBase to find relations, etc
     var name = event.getElementName();
     if (name) {
+    	// May Track change from inner form
+    	var form = forms[event.getFormName()];
+    	
         /** @type {RuntimeTextField} */
-        var component = elements[name];
+        var component = form.elements[name];
         if (component.getDataProviderID) {
             var dataProvider = component.getDataProviderID();
 
@@ -984,9 +987,12 @@ function trackDataChange(event) {
                 }
                 //	primary data provider (skip variables, calcs, aggregates)
             } else {
-                var col = databaseManager.getTable(foundset).getColumn(dataProvider);
+            	// May Track change from inner form
+            	var fs = form.foundset;
+                var col = databaseManager.getTable(fs).getColumn(dataProvider);
                 if (col) {
-                    track(foundset.getSelectedRecord());
+                	// May Track change from inner form
+                    track(fs.getSelectedRecord());
                 }
             }
             //	TODO custom components that have data change ?
