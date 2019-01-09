@@ -86,10 +86,12 @@ var m_RecordLockRetryPeriodMilliseconds = 100;
  */
 function hasEdits() {
     var records = getEditedRecords();
-    for (var i in records) {
-        if (records[i].hasChangedData() || records[i].isNew()) {
-            return true;
-        }
+    for (var i = 0; i < records.length; i++) {
+    	if (records[i] instanceof JSRecord) {
+	        if (records[i].hasChangedData() || records[i].isNew()) {
+	            return true;
+	        }
+    	}
     }
     return false;
 }
