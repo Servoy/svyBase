@@ -980,7 +980,7 @@ function trackDataChange(event) {
                 path.pop();
 
                 /** @type {JSFoundSet} */
-                var fs = this[path];
+                var fs = this[path.join('.')];
                 if (fs) {
                     track(fs.getSelectedRecord());
                 }
