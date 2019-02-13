@@ -482,3 +482,53 @@ function getDataSource() {
 function getName() {
 	return controller.getName();
 }
+
+/**
+ * Loads a foundset, record, PK Dataset, Number, UUID or UUID String primary key. 
+ * Tries to preserve selection based on primary key, otherwise first record is selected.
+ * 
+ * @param {JSFoundSet|JSRecord|JSDataSet|QBSelect|Number|UUID|String} foundsetOrRecordToLoad
+ * 
+ * @public 
+ * 
+ * @return {Boolean} true if successful
+ *
+ * @properties={typeid:24,uuid:"13E19DF7-0285-43C4-AB65-E66902743482"}
+ */
+function loadRecords(foundsetOrRecordToLoad) {
+	if (foundsetOrRecordToLoad instanceof String || foundsetOrRecordToLoad instanceof UUID) {
+		/** @type {UUID} */
+		var uuid = foundsetOrRecordToLoad;
+		if (foundsetOrRecordToLoad instanceof String) {
+			/** @type {String} */
+			var uuidString = foundsetOrRecordToLoad;
+			uuid = application.getUUID(uuidString);
+		}
+		if (uuid) {
+			return controller.loadRecords(uuid);
+		}
+	} else if (foundsetOrRecordToLoad instanceof JSRecord) {
+		/** @type {JSRecord} */
+		var jsRecord = foundsetOrRecordToLoad;
+		var ds = databaseManager.createEmptyDataSet(0, databaseManager.getTable(jsRecord).getColumnNames());
+		ds.addRow(jsRecord.getPKs());
+		return controller.loadRecords(ds);
+	} else if (foundsetOrRecordToLoad instanceof JSFoundSet) {
+		/** @type {JSFoundSet} */
+		var jsFoundset = foundsetOrRecordToLoad;
+		return controller.loadRecords(jsFoundset);
+	} else if (foundsetOrRecordToLoad instanceof Number) {
+		/** @type {Number} */
+		var numberPk = foundsetOrRecordToLoad;
+		return controller.loadRecords(numberPk);
+	} else if (foundsetOrRecordToLoad instanceof QBSelect) {
+		/** @type {QBSelect} */
+		var qbSelect = foundsetOrRecordToLoad;
+		return foundset.loadRecords(qbSelect);
+	} else if (foundsetOrRecordToLoad == null) {
+		return controller.loadRecords(null);
+	} else {
+		return false;
+	}
+	return true;
+}
