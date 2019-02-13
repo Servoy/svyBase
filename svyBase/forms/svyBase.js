@@ -456,3 +456,29 @@ function updatingUI() {
 function fieldValueChanged(dataProviderName, oldValue, newValue, event) {
     return true;
 }
+
+/**
+ * Get the used datasource.
+ * 
+ * @public 
+ * 
+ * @return {String} the datasource
+ * 
+ * @properties={typeid:24,uuid:"3C2A7262-CDEA-443E-8412-F499D9FE63CC"}
+ */
+function getDataSource() {
+	return controller.getDataSource();
+}
+
+/**
+ * Get the name of this form.
+ * 
+ * @public 
+ * 
+ * @return {String} the form name
+ * 
+ * @properties={typeid:24,uuid:"5550E741-E295-4FC6-88CD-3EDE9C5BF3D8"}
+ */
+function getName() {
+	return controller.getName();
+}
