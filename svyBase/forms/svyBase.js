@@ -110,20 +110,26 @@ function addAction(name, handler, isToggle) {
 
 /**
  * This method initiates the update of the user interface of this form.
- * It is recommended that extending forms do not override this method. Instead they should override the dedicated {@link updatingUI} method to add custom code for updating of the UI.
- * @protected
+ * It is recommended that extending forms do not override this method. Instead they should override the dedicated {@link updateUI} method to add custom code for updating of the UI.
+ * 
+ * @private 
+ * @param {JSEvent} event the event that triggered the action
+ * @param {String} eventType the event type as one of the BUBBLE_EVENT_TYPES
+ * 
  * @properties={typeid:24,uuid:"F0266C36-3862-4956-BCB5-A81B97CD84CA"}
  */
-function updateUI() {
-    updatingUI();
+function updateUIHandler(event, eventType) {
+    updateUI(event, eventType);
 }
 
 /**
  * Provides internal handling of the event fired after users change data in form fields.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * In NGClient you can return also a (i18n) string, instead of false, which will be shown as a tooltip on the respective UI field.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link fieldValueChanged} method.
- * @protected
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link onElementDataChange} method.
+ * 
+ * @private
+ * 
  * @param oldValue old value
  * @param newValue new value
  * @param {JSEvent} event the event that triggered the action
@@ -132,39 +138,60 @@ function updateUI() {
  *
  * @properties={typeid:24,uuid:"F0158F6D-AE28-45F9-BFF1-D50AB2504F28"}
  */
-function onElementDataChange(oldValue, newValue, event) {
-    try {
-        if (event) {
-            /** @type {RuntimeTextField} */
-            var field = event.getSource();
-            if (field) {
-                var res = fieldValueChanged(field.getDataProviderID(), oldValue, newValue, event);
-                if ( (res === false) || ( (typeof res == 'string') && utils.stringTrim(res + '').length > 0)) {
-                    return res;
-                }
-            }
-        }
-    } finally {
-        updateUI();
-    }
-    return bubble(event, BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
+function onElementDataChangeHandler(oldValue, newValue, event) {
+	try {
+		if (event) {
+			/** @type {RuntimeComponent} */
+			var component = event.getSource();
+			if (component) {
+				var dataProvider = null;
+				if ('getDataProviderID' in component) {
+					dataProvider = component['getDataProviderID']();
+				}
+
+				if (!dataProvider) {
+					if ('dataprovider' in component) {
+						dataProvider = component['dataprovider'];
+					} else if ('dataProvider' in component) {
+						dataProvider = component['dataProvider'];
+					} else if ('dataProviderID' in component) {
+						dataProvider = component['dataProviderID'];
+					} else if ('dataProviderId' in component) {
+						dataProvider = component['dataProviderId'];
+					} else if ('dataproviderId' in component) {
+						dataProvider = component['dataproviderId'];
+					} else if ('dataproviderID' in component) {
+						dataProvider = component['dataproviderID'];
+					}
+				}
+				var res = onElementDataChange(oldValue, newValue, event, dataProvider);
+				if ( (res === false) || ( (typeof res === 'string') && utils.stringTrim(res + '').length > 0)) {
+					return res;
+				}
+			}
+		}
+	} finally {
+		updateUIHandler(event, BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
+	}
+	return bubble(event, BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
 }
+
 
 /**
  * Provides internal handling to the record selection event.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link dataContextChanged} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link onRecordSelection} method.
  * 
- * @protected
+ * @private
  * @param {JSEvent} event The event that triggered the action.
  *
  * @properties={typeid:24,uuid:"12647EBC-63BE-4361-A77F-C480D61D474F"}
  */
-function onRecordSelection(event) {
+function onRecordSelectionHandler(event) {
     try {
-        dataContextChanged();
+        onRecordSelection(event);
     } finally {
-        updateUI();
+        updateUIHandler(event, BUBBLE_EVENT_TYPES.RECORD_SELECT);
     }
     bubble(event, BUBBLE_EVENT_TYPES.RECORD_SELECT);
 }
@@ -172,17 +199,17 @@ function onRecordSelection(event) {
 /**
  * Provides internal handling to the event fired when the form is shown.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link displayingForm} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link onShow} method.
  *
- * @protected
+ * @private 
  * @param {Boolean} firstShow True if the form is shown for the first time after load.
  * @param {JSEvent} event The event that triggered the action.
  *
  * @properties={typeid:24,uuid:"3F55B248-8B06-4D1B-B662-CAEF7EF09DE5"}
  */
-function onShow(firstShow, event) {
-    displayingForm(firstShow);
-    updateUI();
+function onShowHandler(firstShow, event) {
+	onShow(firstShow, event);
+    updateUIHandler(event, BUBBLE_EVENT_TYPES.FORM_SHOW);
     bubble(event, BUBBLE_EVENT_TYPES.FORM_SHOW);
 }
 
@@ -190,14 +217,14 @@ function onShow(firstShow, event) {
  * Provides internal handling to the event fired when an element on the form has gained focus.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
- * @protected
+ * @private 
  * @param {JSEvent} event The event that triggered the action.
  *
  * @return {Boolean} Return false when the focus gained event of the element itself shouldn't be triggered.
  *
  * @properties={typeid:24,uuid:"435BD246-195F-468F-A231-91548DF1C0EC"}
  */
-function onElementFocusGained(event) {
+function onElementFocusGainedHandler(event) {
     return bubble(event, BUBBLE_EVENT_TYPES.ELEMENT_FOCUS_GAINED);
 }
 
@@ -205,7 +232,7 @@ function onElementFocusGained(event) {
  * Provides internal handling to the event fired when an element on the form has lost focus.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
- * @protected
+ * @private
  * @param {JSEvent} event The event that triggered the action.
  *
  * @return {Boolean} Return false when the focus lost event of the element itself shouldn't be triggered.
@@ -213,24 +240,24 @@ function onElementFocusGained(event) {
  *
  * @properties={typeid:24,uuid:"1025D295-9A86-4D6E-8F14-2A5BE7317CEB"}
  */
-function onElementFocusLost(event) {
+function onElementFocusLostHandler(event) {
     return bubble(event, BUBBLE_EVENT_TYPES.ELEMENT_FOCUS_LOST);
 }
 
 /**
  * Provides internal handling to the event fired when the form window is hiding.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link hidingForm} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link onHide} method.
  * 
- * @protected
+ * @private 
  * @param {JSEvent} event The event that triggered the action.
  *
  * @return {Boolean} True if the form can be hidden, false to block the action so the form will remain visible.
  *
  * @properties={typeid:24,uuid:"F2F39B1A-2DDC-4F8D-ACD4-20E8627AD397"}
  */
-function onHide(event) {
-    if (hidingForm()) {
+function onHideHandler(event) {
+    if (onHide(event)) {
         return bubble(event, BUBBLE_EVENT_TYPES.FORM_HIDE);
     }
     return false;
@@ -239,15 +266,15 @@ function onHide(event) {
 /**
  * Provides internal handling to the event fired when the form is (re)loaded.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link initializingForm} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link onLoad} method.
  * 
- * @protected
+ * @private 
  * @param {JSEvent} event the event that triggered the action.
  *
  * @properties={typeid:24,uuid:"91BEB20C-902E-491D-820C-246EB85E8A51"}
  */
-function onLoad(event) {
-    initializingForm();
+function onLoadHandler(event) {
+    onLoad(event);
     bubble(event, BUBBLE_EVENT_TYPES.FORM_LOAD);
 }
 
@@ -255,7 +282,7 @@ function onLoad(event) {
  * Provides internal handling to the event fired when the user starts to edit a record on the form.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
- * @protected
+ * @private 
  * @param {JSEvent} event The event that triggered the action.
  *
  * @return {Boolean} Return false if the user should not be able to edit the record.
@@ -263,8 +290,8 @@ function onLoad(event) {
  *
  * @properties={typeid:24,uuid:"EBA00357-09D0-49EF-A92A-D54FD9E9A545"}
  */
-function onRecordEditStart(event) {
-    updateUI();
+function onRecordEditStartHandler(event) {
+    updateUIHandler(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_START);
     return bubble(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_START);
 }
 
@@ -272,7 +299,7 @@ function onRecordEditStart(event) {
  * Provides internal handling to the event fired when the user stops editing a record on the form.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
- * @protected
+ * @private 
  * @param {JSRecord} record The record being edited.
  * @param {JSEvent} event The event that triggered the action.
  *
@@ -280,8 +307,8 @@ function onRecordEditStart(event) {
  *
  * @properties={typeid:24,uuid:"0B5A2FCA-ACF2-4E96-B378-A6CE926E02B7"}
  */
-function onRecordEditStop(record, event) {
-    updateUI();
+function onRecordEditStopHandler(record, event) {
+    updateUIHandler(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_STOP);
     return bubble(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_STOP);
 }
 
@@ -289,28 +316,28 @@ function onRecordEditStop(record, event) {
  * Provides internal handling to the event fired when the form is resized.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
- * @protected
+ * @private 
  * @param {JSEvent} event The event that triggered the action.
  *
  * @properties={typeid:24,uuid:"B8D10B13-AF0D-4068-80E4-D5E984C8986B"}
  */
-function onResize(event) {
-    updateUI();
+function onResizeHandler(event) {
+    updateUIHandler(event, BUBBLE_EVENT_TYPES.FORM_RESIZE);
     bubble(event, BUBBLE_EVENT_TYPES.FORM_RESIZE);
 }
 
 /**
  * Provides internal handling to the event fired when the form is about to be unloaded.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link uninitializingForm} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link onUnload} method.
  * 
- * @protected
+ * @private 
  * @param {JSEvent} event The event that triggered the action.
  *
  * @properties={typeid:24,uuid:"272A5E65-70D8-4779-BFE8-DBEB5CE0302B"}
  */
-function onUnload(event) {
-    uninitializingForm();
+function onUnloadHandler(event) {
+    onUnload(event);
     bubble(event, BUBBLE_EVENT_TYPES.FORM_UNLOAD);
 }
 
@@ -371,10 +398,11 @@ function onEventBubble(event, bubbleEventType) {
  * Intended for usage by extending forms which need to react in some way to the data context change.
  * 
  * @protected
+ * @param {JSEvent} event the event that triggered the action.
  * 
  * @properties={typeid:24,uuid:"4152ECA4-2A42-43DF-B3EF-6202E65A164D"}
  */
-function dataContextChanged() {
+function onRecordSelection(event) {
     //intentionally left blank - extending form should override if they need to respond to data context changes (for example when the form's foundset is replaced from outside and this change needs to be propagated to any other forms hosted by this form)
 }
 
@@ -383,9 +411,11 @@ function dataContextChanged() {
  * Intended for usage by extending forms which can override it as needed to perform any form initialization tasks when the form is (re)loaded.
  * 
  * @protected
+ * @param {JSEvent} event the event that triggered the action.
+ * 
  * @properties={typeid:24,uuid:"D72EC127-A1AC-46CF-ACEF-895277876B68"}
  */
-function initializingForm() {
+function onLoad(event) {
     //intentionally left blank - extending form should override if needed
 }
 
@@ -394,9 +424,12 @@ function initializingForm() {
  * Intended for usage by extending forms which can override it as needed to perform any form uninitialization tasks when the form is unloaded.
  * 
  * @protected
+ * 
+ * @param {JSEvent} event The event that triggered the action.
+ * 
  * @properties={typeid:24,uuid:"E11F51C3-98DE-4E1E-857E-D0698A422F1C"}
  */
-function uninitializingForm() {
+function onUnload(event) {
     //intentionally left blank - extending form should override if needed
 }
 
@@ -405,11 +438,12 @@ function uninitializingForm() {
  * Intended for usage by extending forms which can override it as needed to perform any tasks when the form is dispayed.
  * 
  * @protected
- * @param {Boolean} firstShow True if the form is displayed for the first time after (re)load.
+ * @param {Boolean} firstShow True if the form is shown for the first time after load.
+ * @param {JSEvent} event The event that triggered the action.
  * 
  * @properties={typeid:24,uuid:"6A5C9CDE-2D6D-482E-90E6-5FE74D3B977F"}
  */
-function displayingForm(firstShow) {
+function onShow(firstShow, event) {
     //intentionally left blank - extending form should override if needed
 }
 
@@ -418,11 +452,14 @@ function displayingForm(firstShow) {
  * Intended for usage by extending forms which can override it as needed to perform any tasks when the form hiding.
  * 
  * @protected
+ * 
+ * @param {JSEvent} [event] the event that triggered the action
+ * 
  * @return {Boolean} Return true if the form can be hidden, otherwise false.
  * 
  * @properties={typeid:24,uuid:"3187DC11-97F2-4A21-95EC-4695B35FE306"}
  */
-function hidingForm() {
+function onHide(event) {
     //extending form should override if needed
     return true;
 }
@@ -433,9 +470,12 @@ function hidingForm() {
  * 
  * @protected
  * 
+ * @param {JSEvent} [event] the event that triggered the action
+ * @param {String} [eventType] the event type as one of the BUBBLE_EVENT_TYPES
+ * 
  * @properties={typeid:24,uuid:"6B87BF9E-941A-4A5E-9D90-BADB651E8816"}
  */
-function updatingUI() {
+function updateUI(event, eventType) {
     //intentionally left blank - extending form should override if needed
 }
 
@@ -444,16 +484,16 @@ function updatingUI() {
  * Intended for usage by extending forms which can override it as needed to perform any tasks when the data in a field on the form is changed.
  *
  * @protected
- * @param {String} dataProviderName The name of the dataprovide whose value is changed.
  * @param oldValue old value The old(previous) value.
  * @param newValue new value The new(current) value.
  * @param {JSEvent} event The event that triggered the action.
+ * @param {String} dataProviderName The name of the dataprovide whose value is changed (when found).
  *
  * @return {Boolean|String} Return false if the value should not be accepted. In NGClient you can return also a (i18n) string, instead of false, which will be shown as a tooltip.
  *
  * @properties={typeid:24,uuid:"59067D6F-BFFD-4135-9BD0-0D088B1324E4"}
  */
-function fieldValueChanged(dataProviderName, oldValue, newValue, event) {
+function onElementDataChange(dataProviderName, oldValue, newValue, event) {
     return true;
 }
 
@@ -487,6 +527,11 @@ function getName() {
  * Loads a foundset, record, PK Dataset, Number, UUID or UUID String primary key. 
  * Tries to preserve selection based on primary key, otherwise first record is selected.
  * 
+ * To set a reference to a specific foundset in this form, use {@link setFoundSet}. 
+ * Passing a foundset in this method, will only result in the same records being present, 
+ * but not in a shared foundset. When a related foundset is passed into this method for
+ * example, the relation will be lost, only the records will be "copied" over.
+ * 
  * @param {JSFoundSet|JSRecord|JSDataSet|QBSelect|Number|UUID|String} foundsetOrRecordToLoad
  * 
  * @public 
@@ -506,6 +551,8 @@ function loadRecords(foundsetOrRecordToLoad) {
 		}
 		if (uuid) {
 			return controller.loadRecords(uuid);
+		} else {
+			return false;
 		}
 	} else if (foundsetOrRecordToLoad instanceof JSRecord) {
 		/** @type {JSRecord} */
@@ -516,7 +563,7 @@ function loadRecords(foundsetOrRecordToLoad) {
 	} else if (foundsetOrRecordToLoad instanceof JSFoundSet) {
 		/** @type {JSFoundSet} */
 		var jsFoundset = foundsetOrRecordToLoad;
-		return controller.loadRecords(jsFoundset);
+		return foundset.loadRecords(jsFoundset);
 	} else if (foundsetOrRecordToLoad instanceof Number) {
 		/** @type {Number} */
 		var numberPk = foundsetOrRecordToLoad;
@@ -530,5 +577,21 @@ function loadRecords(foundsetOrRecordToLoad) {
 	} else {
 		return false;
 	}
-	return true;
+}
+
+/**
+ * Sets this form's foundset to the one provided, having this form share the 
+ * passed foundest. Use {@link loadRecords} if this form should only show
+ * the same records, but not share the foundset
+ * 
+ * @param {JSFoundSet} foundsetToSet
+ * 
+ * @public 
+ * 
+ * @return {Boolean} true if successful
+ *
+ * @properties={typeid:24,uuid:"1FD26A39-DDE5-41B7-9C09-9B20A9626282"}
+ */
+function setFoundSet(foundsetToSet) {
+	return controller.loadRecords(foundsetToSet);
 }

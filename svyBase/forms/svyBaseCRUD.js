@@ -175,7 +175,7 @@ function newRecord() {
         }
         onNewRecordError(ex);
         updateStandardFormActionsState();
-        updateUI();
+        updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.NEW);
         return false;
     }
 
@@ -188,7 +188,7 @@ function newRecord() {
         return true;
     } finally {
         updateStandardFormActionsState();
-        updateUI();
+        updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.NEW);
     }
 }
 
@@ -232,7 +232,7 @@ function deleteSelectedRecords() {
     try {
         // check pre-delete handler(s)
         if (!beforeDelete(records)) {
-            updateUI();
+            updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.DELETE);
             return false;
         }
 
@@ -240,7 +240,7 @@ function deleteSelectedRecords() {
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
             var validationMarkers = canDelete(records);
             if (hasErrors(validationMarkers)) {
-                updateUI();
+                updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.DELETE);
                 return false;
             }
         }
@@ -278,7 +278,7 @@ function deleteSelectedRecords() {
             }
             onDeleteError(ex);
             updateStandardFormActionsState();
-            updateUI();
+            updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.DELETE);
             return false;
         }
     } finally {
@@ -297,7 +297,7 @@ function deleteSelectedRecords() {
         return true;
     } finally {
         updateStandardFormActionsState();
-        updateUI();
+        updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.DELETE);
     }
 }
 
@@ -446,7 +446,9 @@ function save() {
     // collect edited records
     var records = getEditedRecords();
     if (!records.length) {
-        return false;
+    	afterSave(records);
+    	updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
+        return true;
     }
 
     if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
@@ -458,7 +460,7 @@ function save() {
     try {
         // Call before-save handler(s)
         if (!beforeSave(records)) {
-            updateUI();
+            updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
             return false;
         }
         
@@ -466,7 +468,7 @@ function save() {
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
             var validationMarkers = validate(records);
             if (hasErrors(validationMarkers)) {
-                updateUI();
+                updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
                 return false;
             }
         }
@@ -502,7 +504,7 @@ function save() {
             }
             onSaveError(ex);
             updateStandardFormActionsState();
-            updateUI();
+            updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
             return false;
         }
     } finally {
@@ -517,12 +519,12 @@ function save() {
         clearTracking();
 
         // post-save handler
-        afterSave();
+        afterSave(records);
 
         return true;
     } finally {
         updateStandardFormActionsState();
-        updateUI();
+        updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
     }
 }
 
@@ -574,11 +576,13 @@ function beforeSave(records) {
  * It is called after the records are successfully saved in the database.
  * It can be overridden by extending forms to perform any needed custom tasks.
  * 
+ * @param {Array<JSRecord>} records
+ * 
  * @protected
  * 
  * @properties={typeid:24,uuid:"4A7F8CEA-9DF0-4FBE-98EE-17854331DDAE"}
  */
-function afterSave() { }
+function afterSave(records) { }
 
 /**
  * This method is called as part of the [save]{@link save} operation flow if an error is encountered while saving any of the records in the database.
@@ -609,7 +613,9 @@ function cancel() {
     // collect edited records
     var records = getEditedRecords();
     if (!records.length) {
-        return false;
+    	afterCancel(records);
+    	updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.CANCEL);    	
+        return true;
     }
 
     try {
@@ -633,12 +639,12 @@ function cancel() {
         clearTracking();
 
         // notify post-cancel handler
-        afterCancel();
+        afterCancel(records);
 
         return true;
     } finally {
         updateStandardFormActionsState();
-        updateUI();
+        updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.CANCEL);
     }
 }
 
@@ -663,11 +669,13 @@ function beforeCancel(records) {
  * It is called after the unsaved changes are canceled and the records are reverted back to their original state.
  * It can be overridden by extending forms to perform any needed custom tasks.
  * 
+ * @param {Array<JSRecord>} records
+ * 
  * @protected
  * 
  * @properties={typeid:24,uuid:"F2ECBD52-7DD1-4B30-945E-D4D707351BBA"}
  */
-function afterCancel() { }
+function afterCancel(records) { }
 
 /**
  * Standard form action to navigate to the next record in the foundset. 
@@ -820,7 +828,7 @@ function beforeMoveRecord() {
  * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#fieldValueChanged} method.
  * 
  * @override 
- * @protected
+ * @private 
  * @param oldValue old value
  * @param newValue new value
  * @param {JSEvent} event the event that triggered the action
@@ -830,11 +838,10 @@ function beforeMoveRecord() {
  *
  * @properties={typeid:24,uuid:"309166A4-E459-41AC-9B55-165B1FD54845"}
  */
-function onElementDataChange(oldValue, newValue, event) {
-
+function onElementDataChangeHandler(oldValue, newValue, event) {
     try {
-        //	Call super to see if vetoed
-        if (!_super.onElementDataChange(oldValue, newValue, event)) {
+        //	Call applySuper to see if vetoed
+        if (!applySuper('onElementDataChangeHandler', [oldValue, newValue, event])) {
             return false;
         }
 
@@ -850,7 +857,7 @@ function onElementDataChange(oldValue, newValue, event) {
         return true;
     } finally {
         updateStandardFormActionsState();
-        updateUI();
+        updateUIHandler(createDummyJSEvent(), BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
     }
 }
 
@@ -1177,7 +1184,7 @@ function onEventBubble(event, bubbleEventType) {
                 //this will update the UI as well
                 validate(getEditedRecords());
             } else {
-                updateUI();
+                updateUIHandler(createDummyJSEvent(), BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
             }
             break;
         }
@@ -1189,38 +1196,42 @@ function onEventBubble(event, bubbleEventType) {
  * Override of the svyBase implementation to enforce the record selection [policy]{@link getCrudPolicies}.
  * Provides internal handling to the record selection event.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#dataContextChanged} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#onRecordSelection} method.
  * 
  * @override 
- * @protected
+ * @private 
  * @param {JSEvent} event The event that triggered the action.
  * 
  * @properties={typeid:24,uuid:"B9F1DFF9-3FD9-4E82-BEDE-7697186855BD"}
  */
-function onRecordSelection(event) {
+function onRecordSelectionHandler(event) {
     var selRec = foundset.getSelectedRecord();
 
-    if (m_LastSelectedRecord && (selRec != m_LastSelectedRecord) && (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING)) {
-        if ( (hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew()))) {
-            if (m_LastSelectedRecord.foundset != foundset) {
-                throw new Error('Invalid form state - the foundset of the form was replaced with a different foundset while there were pending changes and the record selection policy does not allow record selection changes when editing records.');
-            }
-
-            //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
-            foundset.setSelectedIndex(foundset.getRecordIndex(m_LastSelectedRecord));
-            if (!beforeMoveRecord()) {
-                return;
-            }
-            m_LastSelectedRecord = selRec;
-            if (selRec) {
-                //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
-                foundset.setSelectedIndex(foundset.getRecordIndex(selRec));
-            }
-        }
+	//see if we have the same record by comparing if the pks of the two records are the same
+    if (m_LastSelectedRecord && !(selRec.getPKs().every(function(x, i) { return x === m_LastSelectedRecord.getPKs()[i] }))) {
+    	if (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
+	        if ( (hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew()))) {
+	            if (m_LastSelectedRecord.foundset != foundset) {
+	                throw new Error('Invalid form state - the foundset of the form was replaced with a different foundset while there were pending changes and the record selection policy does not allow record selection changes when editing records.');
+	            }
+	
+	            //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
+	            foundset.setSelectedIndex(foundset.getRecordIndex(m_LastSelectedRecord));
+	            if (!beforeMoveRecord()) {
+	                return;
+	            }
+	            m_LastSelectedRecord = selRec;
+	            if (selRec) {
+	                //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
+	                foundset.setSelectedIndex(foundset.getRecordIndex(selRec));
+	            }
+	        }
+    	}
     }
     m_LastSelectedRecord = selRec;
     updateStandardFormActionsState();
-    _super.onRecordSelection(event);
+    //using applySuper to overcome encapsulation warnings
+    applySuper('onRecordSelectionHandler', [event]);
 }
 
 /**
@@ -1348,18 +1359,18 @@ function setRecordLockRetryPeriod(milliseconds) {
  * Override of the svyBase implementation to add custom behavior.
  * Provides internal handling to the event fired when the form is (re)loaded.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#initializingForm} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#onLoad} method.
  * 
  * @override 
- * @protected
+ * @private 
  * @param {JSEvent} event the event that triggered the action.
- *
  *
  * @properties={typeid:24,uuid:"A13066F8-44CB-47DA-BB61-E229CCFD6618"}
  */
-function onLoad(event) {
+function onLoadHandler(event) {
     addStandardFormActions();
-    _super.onLoad(event);
+    //using applySuper to overcome encapsulation warnings
+    applySuper('onLoadHandler', [event]);
     updateStandardFormActionsState();
 }
 
@@ -1396,6 +1407,24 @@ function addStandardFormActions() {
     innerAddAction(FORM_ACTION_NAMES.PREVIOUS, selectPreviousRecord, 'Previous', 'Go to the previous record');
     innerAddAction(FORM_ACTION_NAMES.NEXT, selectNextRecord, 'Next', 'Go to the next record');
     innerAddAction(FORM_ACTION_NAMES.LAST, selectLastRecord, 'Last', 'Go to the last record');
+}
+
+/**
+ * This method initiates the update of the user interface of this form.
+ * It is recommended that extending forms do not override this method. Instead they should override the dedicated {@link updatingUI} method to add custom code for updating of the UI.
+ * 
+ * This method is overwritten here to prevent too many applySuper calls
+ * 
+ * @private 
+ * @param {JSEvent} event the event that triggered the action
+ * @param {String} eventType the event type as one of the BUBBLE_EVENT_TYPES
+ * 
+ * @properties={typeid:24,uuid:"D09C7E80-9CA9-4BF2-828E-7E65B07DB16C"}
+ */
+function updateUIHandler(event, eventType) {
+	if (!event) event = createDummyJSEvent();
+	//using applySuper to overcome encapsulation warnings
+	applySuper('updateUIHandler', [event, eventType]);
 }
 
 /**
@@ -1447,18 +1476,17 @@ function updateStandardFormActionsState() {
  * Override of the svyBase implementation to enforce the form hide [policy]{@link getCrudPolicies}.
  * Provides internal handling to the event fired when the form window is hiding.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link svyBase#onEventBubble} method.
- * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#hidingForm} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link svyBase#onHide} method.
  * 
  * @override 
- * @protected
+ * @private
  * @param {JSEvent} event The event that triggered the action.
  *
  * @return {Boolean} True if the form can be hidden, false to block the action so the form will remain visible.
  *
- *
  * @properties={typeid:24,uuid:"BA442073-BB77-423B-B6C6-6BE0369EF186"}
  */
-function onHide(event) {
+function onHideHandler(event) {
     //apply the FormHide policy
     if (getCrudPolicies().getFormHidePolicy() == scopes.svyCRUDManager.FORM_HIDE_POLICY.PREVENT_WHEN_EDITING) {
         if (hasEdits()){
@@ -1466,6 +1494,119 @@ function onHide(event) {
             return false;
         }
     }
-    
-    return _super.onHide(event);
+    //using applySuper to overcome encapsulation warnings
+    return applySuper('onHideHandler', [event]);
+}
+
+/**
+ * Loads a foundset, record, PK Dataset, Number, UUID or UUID String primary key. 
+ * Tries to preserve selection based on primary key, otherwise first record is selected.
+ * 
+ * To set a reference to a specific foundset in this form, use {@link setFoundSet}. 
+ * Passing a foundset in this method, will only result in the same records being present, 
+ * but not in a shared foundset. When a related foundset is passed into this method for
+ * example, the relation will be lost, only the records will be "copied" over.
+ * 
+ * This method will return false if the record selection policy is set to
+ * PREVENT_WHEN_EDITING and this form has open edits
+ * 
+ * @param {JSFoundSet|JSRecord|JSDataSet|QBSelect|Number|UUID|String} foundsetOrRecordToLoad
+ *
+ * @return {Boolean} true if successful
+ * 
+ * @override
+ * @public 
+ *
+ * @properties={typeid:24,uuid:"1ECF6C7F-B28E-47E8-9E1B-01909AC711C8"}
+ */
+function loadRecords(foundsetOrRecordToLoad) {
+	if (!beforeMoveRecord()) {
+		return false;
+	}
+	return _super.loadRecords(foundsetOrRecordToLoad)
+}
+
+/**
+ * Sets this form's foundset to the one provided, having this form share the 
+ * passed foundest. Use {@link loadRecords} if this form should only show
+ * the same records, but not share the foundset
+ * 
+ * This method will return false if the record selection policy is set to
+ * PREVENT_WHEN_EDITING and this form has open edits 
+ * 
+ * @param {JSFoundSet} foundsetToSet
+ *
+ * @return {Boolean} true if successful
+ * @override
+ *
+ * @properties={typeid:24,uuid:"74504B2B-7355-4265-BA8B-4FFAE36900A5"}
+ */
+function setFoundSet(foundsetToSet) {
+	if (!beforeMoveRecord()) {
+		return false;
+	}
+	return _super.setFoundSet(foundsetToSet)
+}
+
+/**
+ * Creates a dummy jsevent for updateUI calls
+ * 
+ * @param {String} [name]
+ * @param {String} [type]
+ * 
+ * @private 
+ *
+ * @properties={typeid:24,uuid:"18D91B20-A132-45C7-A4F4-0B1D8B0F3998"}
+ */
+function createDummyJSEvent(name, type) {
+	/** @type {JSEvent} */
+	var result = {
+		formName: controller.getName(),
+		timestamp: application.getTimeStamp(),
+		data: null,
+		getFormName: function() {
+			return controller.getName()
+		},
+		getElementName: function() {
+			return this.formName;
+		},
+		getModifiers: function() {
+			return null;
+		},
+		getName: function() {
+			return name || 'form';
+		},
+		getSource: function() {
+			return null;
+		},
+		getTimestamp: function() {
+			return this.timestamp;
+		},
+		getType: function() {
+			return type || JSEvent.FORM;
+		},
+		getX: function() {
+			return -1
+		},
+		getY: function() {
+			return -1;
+		}
+	}
+	return result;
+}
+
+/**
+ * Calls the given _super method passing the given arguments
+ * 
+ * This approach is needed to overcome warnings when calling private _super methods
+ * 
+ * @param {String} methodName
+ * @param {Array<*>} methodArgs
+ * 
+ * @private 
+ *
+ * @properties={typeid:24,uuid:"ABC65304-3DAC-4383-9BB8-25A41F5162A5"}
+ */
+function applySuper(methodName, methodArgs) {
+	return _super[methodName].apply(this, methodArgs);
 }
