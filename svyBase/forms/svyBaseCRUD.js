@@ -1210,7 +1210,7 @@ function onRecordSelectionHandler(event) {
     var selRec = foundset.getSelectedRecord();
 
 	//see if we have the same record by comparing if the pks of the two records are the same
-    if (m_LastSelectedRecord && !(selRec.getPKs().every(function(x, i) { return x === m_LastSelectedRecord.getPKs()[i] }))) {
+    if (m_LastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === m_LastSelectedRecord.getPKs()[i] }))) {
     	if (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
 	        if ( (hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew()))) {
 	            if (m_LastSelectedRecord.foundset != foundset) {
