@@ -1525,6 +1525,7 @@ function loadRecords(foundsetOrRecordToLoad) {
 	if (!beforeMoveRecord()) {
 		return false;
 	}
+	updateStandardFormActionsState();
 	return _super.loadRecords(foundsetOrRecordToLoad)
 }
 
@@ -1540,6 +1541,7 @@ function loadRecords(foundsetOrRecordToLoad) {
  *
  * @return {Boolean} true if successful
  * @override
+ * @public 
  *
  * @properties={typeid:24,uuid:"74504B2B-7355-4265-BA8B-4FFAE36900A5"}
  */
@@ -1547,6 +1549,7 @@ function setFoundSet(foundsetToSet) {
 	if (!beforeMoveRecord()) {
 		return false;
 	}
+	updateStandardFormActionsState();
 	return _super.setFoundSet(foundsetToSet)
 }
 
@@ -1556,7 +1559,7 @@ function setFoundSet(foundsetToSet) {
  * @param {String} [name]
  * @param {String} [type]
  * 
- * @private 
+ * @protected  
  *
  * @properties={typeid:24,uuid:"18D91B20-A132-45C7-A4F4-0B1D8B0F3998"}
  */
@@ -1605,7 +1608,7 @@ function createDummyJSEvent(name, type) {
  * @param {String} methodName
  * @param {Array<*>} methodArgs
  * 
- * @private 
+ * @protected  
  *
  * @properties={typeid:24,uuid:"ABC65304-3DAC-4383-9BB8-25A41F5162A5"}
  */
