@@ -1030,7 +1030,29 @@ function validate(records) {
         m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
     }
 
+    // concatenate with specific form's validation markers
+    var formValidationMarkers = onValidate(records);
+    if (formValidationMarkers && formValidationMarkers.length) {
+    	m_ValidationMarkers = m_ValidationMarkers.concat(formValidationMarkers);
+    }
+    
     return m_ValidationMarkers;
+}
+
+/**
+ * This method is called during validation.
+ * You can implement your custom validations overriding this method. 
+ * You can here run validation on formVariables or any other specific form state which is not covered by the validationProvider.
+ * 
+ * @protected
+ * @param {Array<JSRecord>} records The records to validate.
+ * @return {Array<scopes.svyValidationManager.ValidationMarker>} Validation markers containing any validation results (errors, warnings, info) or an empty array.
+ * 
+ *
+ * @properties={typeid:24,uuid:"B6F52E76-EE9E-45EF-AAC1-2ECDFF44851E"}
+ */
+function onValidate(records) {
+	return [];
 }
 
 /**
