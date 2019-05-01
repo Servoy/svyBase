@@ -973,39 +973,22 @@ function trackDataChange(event) {
         return;
     }
 
-    //	TODO Move functionality to svyUtils or svyBase to find relations, etc
-    var name = event.getElementName();
-    if (name) {
-        /** @type {RuntimeTextField} */
-        var component = elements[name];
-        if (component.getDataProviderID) {
-            var dataProvider = component.getDataProviderID();
-
-            //	related data provider
-            var path = dataProvider.split('.');
-            if (path.length > 1) {
-                path.pop();
-
-                /** @type {JSFoundSet} */
-                var fs = this[path.join('.')];
-                if (fs) {
-                    track(fs.getSelectedRecord());
-                }
-                //	primary data provider (skip variables, calcs, aggregates)
-            } else {
-                var col = databaseManager.getTable(foundset).getColumn(dataProvider);
-                if (col) {
-                    track(foundset.getSelectedRecord());
-                }
-            }
-            //	TODO custom components that have data change ?
-        } else {
-
+    if (!event.getElementName()) {
+    	// TODO un-named components not supported
+    	return;
+    }
+    
+    var elementSource = scopes.svyUI.getRuntimeElementSource(event.getFormName(), event.getElementName());
+    var columnName = elementSource.getUnrelatedDataProviderID();
+    var record = elementSource.getRecord();
+    if (columnName && record) {
+        var col = databaseManager.getTable(record).getColumn(columnName);
+        if (col) {
+            //	primary data provider (skip variables, calcs, aggregates)
+            track(record);
         }
-
-        // TODO un-named components not supported ?
     } else {
-
+        //	TODO custom components that have data change ?
     }
 }
 
