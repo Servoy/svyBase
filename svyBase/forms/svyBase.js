@@ -564,6 +564,10 @@ function loadRecords(foundsetOrRecordToLoad) {
 		/** @type {JSFoundSet} */
 		var jsFoundset = foundsetOrRecordToLoad;
 		return foundset.loadRecords(jsFoundset);
+	} else if (foundsetOrRecordToLoad instanceof JSDataSet) {
+		/** @type {JSDataSet} */
+		var jsDataSet = foundsetOrRecordToLoad;
+		return foundset.loadRecords(jsDataSet);
 	} else if (foundsetOrRecordToLoad instanceof Number) {
 		/** @type {Number} */
 		var numberPk = foundsetOrRecordToLoad;
