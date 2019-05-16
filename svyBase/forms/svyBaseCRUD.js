@@ -107,7 +107,7 @@ function hasEdits() {
  */
 function hasErrors(markersToCheck) {
     if (!markersToCheck){
-        markersToCheck = m_ValidationMarkers;
+        markersToCheck = getValidationMarkers();
     }
     for (var i in markersToCheck) {
         if (markersToCheck[i].getLevel() == scopes.svyValidationManager.VALIDATION_LEVEL.ERROR) {
@@ -469,6 +469,7 @@ function save() {
         // validate
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
             var validationMarkers = validate(records);
+            updateValidationMarkersUI(validationMarkers, null);
             if (hasErrors(validationMarkers)) {
                 updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
                 return false;
@@ -634,7 +635,8 @@ function cancel() {
 
         // clear validation markers
         clearValidationMarkers();
-
+        updateValidationMarkersUI(getValidationMarkers(), null);
+        
         releaseAllLocks();
 
         // clear tracking
@@ -852,7 +854,8 @@ function onElementDataChangeHandler(oldValue, newValue, event) {
 
         // Continuous validation
         if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
-            validate(getEditedRecords());
+            var markers = validate(getEditedRecords());
+            updateValidationMarkersUI(markers, event);
             // TODO Consider returning false  to block data change ?
         }
 
@@ -957,6 +960,7 @@ function track(records) {
 function clearTracking() {
     m_Tracking = [];
 }
+
 /**
  * Used in the data change event handlers to add the applicable records to the batch scope.
  * 
@@ -1024,7 +1028,7 @@ function trackDataChange(event) {
  */
 function validate(records) {
     //	delegate to registered validators and collect markers
-    m_ValidationMarkers = [];
+    clearValidationMarkers();
     
     for (var i in records) {
         m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
@@ -1086,12 +1090,13 @@ function confirmDelete(records) {
  */
 function canDelete(records) {
     //	delegate to registered validators and collect markers
-    m_ValidationMarkers = [];
+	//TODO: should validation markers be cleared here?
+    clearValidationMarkers(); 
     for (var i in records) {
         m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.canDelete(records[i]));
     }
 
-    return m_ValidationMarkers;
+    return getValidationMarkers();
 }
 
 /**
@@ -1160,6 +1165,7 @@ function getValidationMarkers() {
  * @properties={typeid:24,uuid:"2946BFE1-3027-44BE-8BE3-BC3F38A69AB9"}
  */
 function clearValidationMarkers() {
+	clearValidationMarkersUI(m_ValidationMarkers);
     m_ValidationMarkers = [];
 }
 
@@ -1175,7 +1181,7 @@ function clearValidationMarkers() {
 function getErrors(markersToCheck) {
     var markers = [];
     if (!markersToCheck){
-        markersToCheck = m_ValidationMarkers;
+        markersToCheck = getValidationMarkers();
     }
     for (var i in markersToCheck) {
         if (markersToCheck[i].getLevel() == scopes.svyValidationManager.VALIDATION_LEVEL.ERROR) {
@@ -1206,7 +1212,8 @@ function onEventBubble(event, bubbleEventType) {
             updateStandardFormActionsState();
             if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
                 //this will update the UI as well
-                validate(getEditedRecords());
+                var markers = validate(getEditedRecords());
+                updateValidationMarkersUI(markers, event);
             } else {
                 updateUIHandler(createDummyJSEvent(), BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
             }

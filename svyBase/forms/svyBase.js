@@ -480,6 +480,36 @@ function updateUI(event, eventType) {
 }
 
 /**
+ * Can be called by any validation logic that clears validation markers and wants to update the UI.
+ * Used for example by the <code>clearValidationMarkers</code> method in svyBaseCRUD which is called on
+ * save, cancel, delete and validate.
+ * 
+ * @public  
+ * 
+ * @param {Array<scopes.svyValidationManager.ValidationMarker>} validationMarkers the validation markers that are to be cleared
+ *
+ * @properties={typeid:24,uuid:"A6D07533-5907-42CA-8FF5-ABCFCD2B8EA9"}
+ */
+function clearValidationMarkersUI(validationMarkers) {
+	//intentionally left blank - extending form should override if needed
+}
+
+/**
+ * Can be called by any validation logic that creates validation markers and wants to update the UI.
+ * Used by the {@link validate} method in svyBaseCRUD
+ * 
+ * @public  
+ * 
+ * @param {Array<scopes.svyValidationManager.ValidationMarker>} validationMarkers the validation markers found by any validation logic to show in a UI
+ * @param {JSEvent} event the event that triggered the update or null if not triggered from an UI event
+ *
+ * @properties={typeid:24,uuid:"A5C38A10-3989-47F7-88A9-7B9639BE10D1"}
+ */
+function updateValidationMarkersUI(validationMarkers, event) {
+	//intentionally left blank - extending form should override if needed
+}
+
+/**
  * Called as part of the custom {@link onElementDataChange} event handling.
  * Intended for usage by extending forms which can override it as needed to perform any tasks when the data in a field on the form is changed.
  *

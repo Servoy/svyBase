@@ -39,7 +39,7 @@ function PropertyChangeSupport(object) {
         var propertyChangeListener = map[method];
         if (!propertyChangeListener) {
             propertyChangeListener = new java.beans.PropertyChangeListener({
-                propertyChange: function(e) {
+                propertyChange: /** @param {java.beans.PropertyChangeEvent} e */ function(e) {
                     scopes.svySystem.callMethod(method, {
                             propertyName: e.getPropertyName(),
                             oldValue: e.getOldValue(),
