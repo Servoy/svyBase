@@ -900,7 +900,7 @@ function untrack(records) {
         /** @type {JSRecord} */
         var record = records;
         var index = m_Tracking.indexOf(record);
-        if (index == -1) {
+        if (index > -1) {
             m_Tracking.splice(index, 1);
 
             //	TODO Fire special tracking event ?
