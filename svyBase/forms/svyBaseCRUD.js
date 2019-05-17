@@ -220,17 +220,6 @@ function deleteSelectedRecords() {
         return false;
     }
 
-    if (!confirmDelete(records)) {
-        return false;
-    }
-
-    //lock
-    if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
-        if (!lockRecords(records)) {
-            return false;
-        }
-    }
-
     try {
         // check pre-delete handler(s)
         if (!beforeDelete(records)) {
@@ -243,6 +232,17 @@ function deleteSelectedRecords() {
             var validationMarkers = canDelete(records);
             if (hasErrors(validationMarkers)) {
                 updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.DELETE);
+                return false;
+            }
+        }
+        
+        if (!confirmDelete(records)) {
+            return false;
+        }
+
+        //lock
+        if (getCrudPolicies().getRecordLockingPolicy() == scopes.svyCRUDManager.RECORD_LOCKING_POLICY.AUTO) {
+            if (!lockRecords(records)) {
                 return false;
             }
         }
