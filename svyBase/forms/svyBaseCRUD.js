@@ -231,6 +231,7 @@ function deleteSelectedRecords() {
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
             var validationMarkers = canDelete(records);
             if (hasErrors(validationMarkers)) {
+                onValidationError(validationMarkers, FORM_ACTION_NAMES.DELETE);
                 updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.DELETE);
                 return false;
             }
@@ -471,6 +472,7 @@ function save() {
             var validationMarkers = validate(records);
             updateValidationMarkersUI(validationMarkers, null);
             if (hasErrors(validationMarkers)) {
+            	onValidationError(validationMarkers, FORM_ACTION_NAMES.SAVE);
                 updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
                 return false;
             }
@@ -1053,6 +1055,22 @@ function onValidate(records) {
 }
 
 /**
+ * This method is called as part of the [delete]{@link deleteSelectedRecords} and [save]{@link save} operation 
+ * flow if an error is encountered while validating the records to be deleted or saved.
+ * It can be overridden by extending forms to perform any needed custom error handling.
+ * 
+ * @param {Array<scopes.svyValidationManager.ValidationMarker>} validationMarkers containing any validation errors
+ * @param {String} formActionName the form action that triggered this method as one of the FORM_ACTION_NAMES 
+ * 
+ * @protected 
+ *
+ * @properties={typeid:24,uuid:"925A30F5-C7A9-414D-B650-E43A78E1955B"}
+ */
+function onValidationError(validationMarkers, formActionName) {
+	
+}
+
+/**
  * This method is used to obtain user confirmation before [deleting]{@link deleteSelectedRecords} records from the database.
  * Its default implementation displays a dialog to the user prompting to confirm the deletion.
  * Extending forms can override it to provide custom delete confirmation.
@@ -1083,13 +1101,12 @@ function confirmDelete(records) {
  */
 function canDelete(records) {
     //	delegate to registered validators and collect markers
-	//TODO: should validation markers be cleared here?
-    clearValidationMarkers(); 
+	var deletionMarkers = [];
     for (var i in records) {
-        m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.canDelete(records[i]));
+    	deletionMarkers = deletionMarkers.concat(scopes.svyValidationManager.canDelete(records[i]));
     }
 
-    return getValidationMarkers();
+    return deletionMarkers;
 }
 
 /**
@@ -1455,7 +1472,7 @@ function addStandardFormActions() {
  * 
  * @private 
  * @param {JSEvent} event the event that triggered the action
- * @param {String} eventType the event type as one of the BUBBLE_EVENT_TYPES
+ * @param {String} eventType the event type as one of the BUBBLE_EVENT_TYPES or FORM_ACTION_NAMES
  * 
  * @properties={typeid:24,uuid:"D09C7E80-9CA9-4BF2-828E-7E65B07DB16C"}
  */
