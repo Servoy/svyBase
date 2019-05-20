@@ -1226,26 +1226,32 @@ function onRecordSelectionHandler(event) {
     	if (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
 	        if ( (hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew()))) {
 	            if (m_LastSelectedRecord.foundset != foundset) {
-	                throw new Error('Invalid form state - the foundset of the form was replaced with a different foundset while there were pending changes and the record selection policy does not allow record selection changes when editing records.');
-	            }
-	
-	            //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
-	            foundset.setSelectedIndex(foundset.getRecordIndex(m_LastSelectedRecord));
-	            if (!beforeMoveRecord()) {
-	                return;
-	            }
-	            m_LastSelectedRecord = selRec;
-	            if (selRec) {
-	                //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
-	                foundset.setSelectedIndex(foundset.getRecordIndex(selRec));
-	            }
-	        }
-    	}
+                throw new Error('Invalid form state - the foundset of the form was replaced with a different foundset while there were pending changes and the record selection policy does not allow record selection changes when editing records.');
+            }
+
+            //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
+            foundset.setSelectedIndex(foundset.getRecordIndex(m_LastSelectedRecord));
+            if (!beforeMoveRecord()) {
+                return;
+            }
+            m_LastSelectedRecord = selRec;
+            if (selRec) {
+                //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
+                foundset.setSelectedIndex(foundset.getRecordIndex(selRec));
+            }
+        }
     }
+    
+    //fire handler only if the record has really been changed or we have no lastSelectedRecord
+    var fireHandler = !m_LastSelectedRecord || (m_LastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === m_LastSelectedRecord.getPKs()[i] })));
+    
     m_LastSelectedRecord = selRec;
     updateStandardFormActionsState();
+    
     //using applySuper to overcome encapsulation warnings
-    applySuper('onRecordSelectionHandler', [event]);
+    if (fireHandler) {
+    	applySuper('onRecordSelectionHandler', [event]);
+    }
 }
 
 /**
