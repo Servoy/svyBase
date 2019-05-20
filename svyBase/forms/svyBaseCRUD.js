@@ -1025,15 +1025,7 @@ function validate(records) {
     //	delegate to registered validators and collect markers
     clearValidationMarkers();
     
-    for (var i in records) {
-        validationMarkers = validationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
-    }
-
-    // concatenate with specific form's validation markers
-    var formValidationMarkers = onValidate(records);
-    if (formValidationMarkers && formValidationMarkers.length) {
-    	validationMarkers = validationMarkers.concat(formValidationMarkers);
-    }
+    validationMarkers = validateRecords(records);
     
     return validationMarkers;
 }
@@ -1050,8 +1042,12 @@ function validate(records) {
  *
  * @properties={typeid:24,uuid:"B6F52E76-EE9E-45EF-AAC1-2ECDFF44851E"}
  */
-function onValidate(records) {
-	return [];
+function validateRecords(records) {
+	validationMarkers = [];
+    for (var i in records) {
+        validationMarkers = validationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
+    }
+    return validationMarkers;
 }
 
 /**
