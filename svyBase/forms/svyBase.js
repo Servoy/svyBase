@@ -61,10 +61,11 @@ var BUBBLE_EVENT_TYPES = {
 }
 
 /**
+ * Map of form action names to form action
  * @private
  * @properties={typeid:35,uuid:"40C7FF71-D172-462F-8C39-0F373D0E9979",variableType:-4}
  */
-var m_ActionMap = { };
+var actionMap = { };
 
 /**
  * Gets the indicated FormAction by name.
@@ -75,7 +76,7 @@ var m_ActionMap = { };
  */
 function getAction(name) {
     /** @type {scopes.svyActionManager.FormAction} */
-    var action = m_ActionMap[name];
+    var action = actionMap[name];
     return action || null;
 }
 
@@ -87,7 +88,7 @@ function getAction(name) {
  */
 function getActionNames() {
     var names = [];
-    for (var name in m_ActionMap) {
+    for (var name in actionMap) {
         names.push(name);
     }
     return names;
@@ -104,7 +105,7 @@ function getActionNames() {
  */
 function addAction(name, handler, isToggle) {
     var action = new scopes.svyActionManager.FormAction(name, this, handler, isToggle);
-    m_ActionMap[action.getActionName()] = action;
+    actionMap[action.getActionName()] = action;
     return action;
 }
 

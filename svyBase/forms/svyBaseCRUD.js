@@ -20,7 +20,7 @@ var FORM_ACTION_NAMES = {
  * @private
  * @properties={typeid:35,uuid:"C86C5862-377B-417B-BD56-4843BE201DC0",variableType:-4}
  */
-var m_CrudPolicies = scopes.svyCRUDManager.createCRUDPolicies();
+var crudPolicies = scopes.svyCRUDManager.createCRUDPolicies();
 
 /**
  * Gets the form policies.
@@ -29,7 +29,7 @@ var m_CrudPolicies = scopes.svyCRUDManager.createCRUDPolicies();
  * @properties={typeid:24,uuid:"89F329BC-F975-4C32-98D7-7A333A47EA2F"}
  */
 function getCrudPolicies() {
-    return m_CrudPolicies;
+    return crudPolicies;
 }
 
 /**
@@ -38,7 +38,7 @@ function getCrudPolicies() {
  * @type {Array<scopes.svyValidationManager.ValidationMarker>}
  * @properties={typeid:35,uuid:"E675958D-88A2-4F16-AE2B-4B0E0364C9A5",variableType:-4}
  */
-var m_ValidationMarkers = [];
+var validationMarkers = [];
 
 /**
  * Used to track batch of work records when the batch scope is set to AUTO.
@@ -46,21 +46,21 @@ var m_ValidationMarkers = [];
  * @type {Array<JSRecord>}
  * @properties={typeid:35,uuid:"89983EDF-C8A5-4B52-A2B6-2201FFD1D4D0",variableType:-4}
  */
-var m_Tracking = [];
+var trackedRecords = [];
 
 /**
  * @private
  * @type {JSRecord}
  * @properties={typeid:35,uuid:"F2378E77-3583-490A-AD73-602D91186937",variableType:-4}
  */
-var m_LastSelectedRecord = null;
+var lastSelectedRecord = null;
 
 /**
  * @private
  * @type {Array<String>}
  * @properties={typeid:35,uuid:"3865FDE2-6E9E-4D77-B18E-CF624D567811",variableType:-4}
  */
-var m_RecordLocks = [];
+var recordLocks = [];
 
 /**
  * @private
@@ -68,7 +68,7 @@ var m_RecordLocks = [];
  *
  * @properties={typeid:35,uuid:"D1EBFFC4-9B7D-46D8-86FB-3F30D697DF8C",variableType:4}
  */
-var m_RecordLockRetries = 3;
+var recordLockRetries = 3;
 
 /**
  * @private
@@ -76,7 +76,7 @@ var m_RecordLockRetries = 3;
  *
  * @properties={typeid:35,uuid:"D964F6E8-1808-4A13-8D42-9F0E6DBB0F24",variableType:4}
  */
-var m_RecordLockRetryPeriodMilliseconds = 100;
+var recordLockRetryPeriodMilliseconds = 100;
 
 /**
  * Indicates if there are any changed or new records in the batch of work controlled by this form.
@@ -229,9 +229,9 @@ function deleteSelectedRecords() {
 
         // validate
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
-            var validationMarkers = canDelete(records);
-            if (hasErrors(validationMarkers)) {
-                onValidationError(validationMarkers, FORM_ACTION_NAMES.DELETE);
+            var markers = canDelete(records);
+            if (hasErrors(markers)) {
+                onValidationError(markers, FORM_ACTION_NAMES.DELETE);
                 updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.DELETE);
                 return false;
             }
@@ -469,10 +469,10 @@ function save() {
         
         // validate
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
-            var validationMarkers = validate(records);
-            updateValidationMarkersUI(validationMarkers, null);
-            if (hasErrors(validationMarkers)) {
-            	onValidationError(validationMarkers, FORM_ACTION_NAMES.SAVE);
+            var markers = validate(records);
+            updateValidationMarkersUI(markers, null);
+            if (hasErrors(markers)) {
+            	onValidationError(markers, FORM_ACTION_NAMES.SAVE);
                 updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
                 return false;
             }
@@ -823,9 +823,9 @@ function beforeMoveRecord() {
             }
         } else if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY) {
     		var records = getEditedRecords();
-    		var validationMarkers = validate(records);
-            updateValidationMarkersUI(validationMarkers, null);
-            if (hasErrors(validationMarkers)) {
+    		var markers = validate(records);
+            updateValidationMarkersUI(markers, null);
+            if (hasErrors(markers)) {
                 return false;
             }
         }
@@ -911,9 +911,9 @@ function untrack(records) {
     } else {
         /** @type {JSRecord} */
         var record = records;
-        var index = m_Tracking.indexOf(record);
+        var index = trackedRecords.indexOf(record);
         if (index > -1) {
-            m_Tracking.splice(index, 1);
+            trackedRecords.splice(index, 1);
 
             //	TODO Fire special tracking event ?
         }
@@ -954,8 +954,8 @@ function track(records) {
     } else {
         /** @type {JSRecord} */
         var record = records;
-        if (m_Tracking.indexOf(record) == -1) {
-            m_Tracking.push(record);
+        if (trackedRecords.indexOf(record) == -1) {
+            trackedRecords.push(record);
 
             //	TODO Fire special tracking event ?
         }
@@ -970,7 +970,7 @@ function track(records) {
  * @properties={typeid:24,uuid:"0B4A4D48-187A-4663-B435-922BABBC7259"}
  */
 function clearTracking() {
-    m_Tracking = [];
+    trackedRecords = [];
 }
 
 /**
@@ -1026,16 +1026,16 @@ function validate(records) {
     clearValidationMarkers();
     
     for (var i in records) {
-        m_ValidationMarkers = m_ValidationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
+        validationMarkers = validationMarkers.concat(scopes.svyValidationManager.validate(records[i]));
     }
 
     // concatenate with specific form's validation markers
     var formValidationMarkers = onValidate(records);
     if (formValidationMarkers && formValidationMarkers.length) {
-    	m_ValidationMarkers = m_ValidationMarkers.concat(formValidationMarkers);
+    	validationMarkers = validationMarkers.concat(formValidationMarkers);
     }
     
-    return m_ValidationMarkers;
+    return validationMarkers;
 }
 
 /**
@@ -1059,14 +1059,14 @@ function onValidate(records) {
  * flow if an error is encountered while validating the records to be deleted or saved.
  * It can be overridden by extending forms to perform any needed custom error handling.
  * 
- * @param {Array<scopes.svyValidationManager.ValidationMarker>} validationMarkers containing any validation errors
+ * @param {Array<scopes.svyValidationManager.ValidationMarker>} markers containing any validation errors
  * @param {String} formActionName the form action that triggered this method as one of the FORM_ACTION_NAMES 
  * 
  * @protected 
  *
  * @properties={typeid:24,uuid:"925A30F5-C7A9-414D-B650-E43A78E1955B"}
  */
-function onValidationError(validationMarkers, formActionName) {
+function onValidationError(markers, formActionName) {
 	
 }
 
@@ -1139,8 +1139,8 @@ function getEditedRecords() {
             break;
         }
         case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.AUTO: {
-            for (var i in m_Tracking) {
-                records.push(m_Tracking[i]);                
+            for (var i in trackedRecords) {
+                records.push(trackedRecords[i]);                
             }
             break;
         }
@@ -1163,7 +1163,7 @@ function getEditedRecords() {
  * @properties={typeid:24,uuid:"433FDF42-887B-4C39-A12A-A7AE3932C38B"}
  */
 function getValidationMarkers() {
-    return m_ValidationMarkers;
+    return validationMarkers;
 }
 
 /**
@@ -1175,8 +1175,8 @@ function getValidationMarkers() {
  * @properties={typeid:24,uuid:"2946BFE1-3027-44BE-8BE3-BC3F38A69AB9"}
  */
 function clearValidationMarkers() {
-	clearValidationMarkersUI(m_ValidationMarkers);
-    m_ValidationMarkers = [];
+	clearValidationMarkersUI(validationMarkers);
+    validationMarkers = [];
 }
 
 /**
@@ -1249,27 +1249,27 @@ function onRecordSelectionHandler(event) {
     var selRec = foundset.getSelectedRecord();
 
 	//see if we have the same record by comparing if the pks of the two records are the same
-    if (m_LastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === m_LastSelectedRecord.getPKs()[i] }))) {
+    if (lastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === lastSelectedRecord.getPKs()[i] }))) {
     	var preventSelection = false;
 		if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
 			//prevent record selection when the there are edits or the record is newly created
-			preventSelection = hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew());
+			preventSelection = hasEdits() || (lastSelectedRecord.hasChangedData() || lastSelectedRecord.isNew());
 		}
 		if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_HAS_EDITING_ERRORS) {
 			//prevent record selection when there are errors
 			preventSelection = hasErrors(getValidationMarkers());
 		}
     	if (preventSelection) {
-            if ((hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew())) && m_LastSelectedRecord.foundset != foundset) {
+            if ((hasEdits() || (lastSelectedRecord.hasChangedData() || lastSelectedRecord.isNew())) && lastSelectedRecord.foundset != foundset) {
                 throw new Error('Invalid form state - the foundset of the form was replaced with a different foundset while there were pending changes and the record selection policy does not allow record selection changes when editing records.');
             }
 
             //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
-            foundset.setSelectedIndex(foundset.getRecordIndex(m_LastSelectedRecord));
+            foundset.setSelectedIndex(foundset.getRecordIndex(lastSelectedRecord));
             if (!beforeMoveRecord()) {
                 return;
             }
-            m_LastSelectedRecord = selRec;
+            lastSelectedRecord = selRec;
             if (selRec) {
                 //intentionally using foundset.setSelectedIndex to prevent firing the onRecordSelection event
                 foundset.setSelectedIndex(foundset.getRecordIndex(selRec));
@@ -1278,9 +1278,9 @@ function onRecordSelectionHandler(event) {
     }
     
     //fire handler only if the record has really been changed or we have no lastSelectedRecord
-    var fireHandler = !m_LastSelectedRecord || (m_LastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === m_LastSelectedRecord.getPKs()[i] })));
+    var fireHandler = !lastSelectedRecord || (lastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === lastSelectedRecord.getPKs()[i] })));
     
-    m_LastSelectedRecord = selRec;
+    lastSelectedRecord = selRec;
     updateStandardFormActionsState();
     
     //using applySuper to overcome encapsulation warnings
@@ -1305,13 +1305,13 @@ function onRecordSelectionHandler(event) {
 function lockRecord(record) {
     var lockName = application.getUUID().toString();
     //using automatic retry to acquire record lock - for example, try 3 times to lock the record in 100ms intervals
-    for (var i = 0; i < m_RecordLockRetries; i++) {
+    for (var i = 0; i < recordLockRetries; i++) {
         var locked = databaseManager.acquireLock(record.foundset, record.foundset.getRecordIndex(record), lockName);
         if (locked) {
-            m_RecordLocks.push(lockName);
+            recordLocks.push(lockName);
             return lockName;
         }
-        application.sleep(m_RecordLockRetryPeriodMilliseconds);
+        application.sleep(recordLockRetryPeriodMilliseconds);
     }
     throw new Error('Could not acquire record lock.');
 }
@@ -1336,7 +1336,7 @@ function lockRecords(records) {
                 lockRecord(rec);
             } catch (e) {
                 releaseAllLocks();
-                m_ValidationMarkers.push(new scopes.svyValidationManager.ValidationMarker(rec, e.message, scopes.svyValidationManager.VALIDATION_LEVEL.ERROR));
+                validationMarkers.push(new scopes.svyValidationManager.ValidationMarker(rec, e.message, scopes.svyValidationManager.VALIDATION_LEVEL.ERROR));
                 return false;
             }
         }
@@ -1354,9 +1354,9 @@ function lockRecords(records) {
  * @properties={typeid:24,uuid:"1DA040A1-4A3D-4AB7-960B-44F632FE5CCA"}
  */
 function releaseLock(lockName) {
-    var lockIndx = m_RecordLocks.indexOf(lockName);
+    var lockIndx = recordLocks.indexOf(lockName);
     if (lockIndx > -1) {
-        m_RecordLocks.splice(lockIndx, 1);
+        recordLocks.splice(lockIndx, 1);
     }
     databaseManager.releaseAllLocks(lockName);
 
@@ -1370,8 +1370,8 @@ function releaseLock(lockName) {
  * @properties={typeid:24,uuid:"A8B701A0-EC80-45D9-A196-40CB3B81D463"}
  */
 function releaseAllLocks() {
-    while (m_RecordLocks.length > 0) {
-        var lockName = m_RecordLocks.pop();
+    while (recordLocks.length > 0) {
+        var lockName = recordLocks.pop();
         databaseManager.releaseAllLocks(lockName);
     }
 }
@@ -1387,10 +1387,10 @@ function releaseAllLocks() {
  */
 function setRecordLockRetries(retryCount) {
     if (retryCount > 1) {
-        m_RecordLockRetries = retryCount;
+        recordLockRetries = retryCount;
     } else {
         //should try at least once to acquire record lock
-        m_RecordLockRetries = 1;
+        recordLockRetries = 1;
     }
 }
 
@@ -1404,9 +1404,9 @@ function setRecordLockRetries(retryCount) {
  */
 function setRecordLockRetryPeriod(milliseconds) {
     if (milliseconds > 0) {
-        m_RecordLockRetryPeriodMilliseconds = milliseconds;
+        recordLockRetryPeriodMilliseconds = milliseconds;
     } else {
-        m_RecordLockRetryPeriodMilliseconds = 0;
+        recordLockRetryPeriodMilliseconds = 0;
     }
 }
 
