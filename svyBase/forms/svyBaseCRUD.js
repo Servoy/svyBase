@@ -1014,6 +1014,8 @@ function trackDataChange(event) {
  * Its default implementation uses the available validation providers associated with the datasources of the specified records to perform the actual validation.
  * The validation results will combine information returned from all applicable validation providers.
  * If the validation results contain any validation markers with ERROR level then the records will not be allowed to be saved in the database.
+ * Don't override this method. If you wish to extend or fully override the validation run by this form override the method [validateRecords]{@link validateRecords}
+ * 
  * 
  * @protected
  * @param {Array<JSRecord>} records The records to validate.
@@ -1038,6 +1040,18 @@ function validate(records) {
  * @protected
  * @param {Array<JSRecord>} records The records to validate.
  * @return {Array<scopes.svyValidationManager.ValidationMarker>} Validation markers containing any validation results (errors, warnings, info) or an empty array.
+ * 
+ * @example <pre>function validateRecords(records) {
+ *	// call the super to extend the returned ValidationMarkers with custom ValidationMarkers applicable to this form
+ *	var markers = _super.validateRecords(records);
+ *	var markerIP
+ *	if (!loginName) {
+ *		markerLoginName = new scopes.svyValidationManager.ValidationMarker(null, 'Missing required field loginName', scopes.svyValidationManager.VALIDATION_LEVEL.ERROR,'loginName');
+ *		markers.push(markerLoginName);
+ *	}
+ *	return markers;
+ *}
+ * </pre>
  * 
  *
  * @properties={typeid:24,uuid:"B6F52E76-EE9E-45EF-AAC1-2ECDFF44851E"}

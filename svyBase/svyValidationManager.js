@@ -109,10 +109,6 @@ function canDelete(record) {
  * @properties={typeid:24,uuid:"24E0FAA7-5ADF-40BB-9F60-213373546243"}
  */
 function ValidationMarker(record, message, level, dataProvider) {
-	if (!record) {
-		throw new Error('Record is not specified');
-	}
-
 	if (!message) {
 		throw new Error('Message is not specified');
 	}
