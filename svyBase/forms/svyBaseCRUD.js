@@ -809,7 +809,7 @@ function selectLastRecord() {
  */
 function beforeMoveRecord() {
     if (hasEdits()) {
-        if (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
+        if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
             var userLeaveAction = onUserLeave();
             if (userLeaveAction == scopes.svyCRUDManager.USER_LEAVE.BLOCK) {
                 return false;
@@ -819,8 +819,18 @@ function beforeMoveRecord() {
             } else {
                 return cancel();
             }
+        } else if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY) {
+    		var records = getEditedRecords();
+    		var validationMarkers = validate(records);
+            updateValidationMarkersUI(validationMarkers, null);
+            if (hasErrors(validationMarkers)) {
+                return false;
+            }
         }
     }
+    //a policy PREVENT_WHEN_EDITING could be implemented here that would always block moving records
+    //when a validation error occurs, even when the user did not edit anything; then it should block
+    //even when there are no edits
     return true;
 }
 
@@ -1223,9 +1233,17 @@ function onRecordSelectionHandler(event) {
 
 	//see if we have the same record by comparing if the pks of the two records are the same
     if (m_LastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === m_LastSelectedRecord.getPKs()[i] }))) {
-    	if (getCrudPolicies().getRecordSelectionPolicy() == scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
-	        if ( (hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew()))) {
-	            if (m_LastSelectedRecord.foundset != foundset) {
+    	var preventSelection = false;
+		if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
+			//prevent record selection when the there are edits or the record is newly created
+			preventSelection = hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew());
+		}
+		if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_HAS_EDITING_ERRORS) {
+			//prevent record selection when there are errors
+			preventSelection = hasErrors(getValidationMarkers());
+		}
+    	if (preventSelection) {
+            if ((hasEdits() || (m_LastSelectedRecord.hasChangedData() || m_LastSelectedRecord.isNew())) && m_LastSelectedRecord.foundset != foundset) {
                 throw new Error('Invalid form state - the foundset of the form was replaced with a different foundset while there were pending changes and the record selection policy does not allow record selection changes when editing records.');
             }
 

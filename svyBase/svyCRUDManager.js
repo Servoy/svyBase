@@ -55,6 +55,12 @@ var RECORD_SELECTION_POLICY = {
      * Prevents the selection of other records while editing the current one.
      */
     PREVENT_WHEN_EDITING: 'prevent-when-editing',
+	
+	
+    /**
+     * Prevents the selection of other records while editing and validation has errors.
+     */
+     PREVENT_WHEN_HAS_EDITING_ERRORS: 'prevent-when-editing-has-errors',	
 
     /**
      * Allows the selection of other records while editing the current one.
