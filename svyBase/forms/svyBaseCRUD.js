@@ -1230,6 +1230,10 @@ function onEventBubble(event, bubbleEventType) {
 
         case BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE: {
             updateStandardFormActionsState();
+            
+            // track data change
+            trackDataChange(event);
+            
             if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
                 //this will update the UI as well
                 var markers = validate(getEditedRecords());

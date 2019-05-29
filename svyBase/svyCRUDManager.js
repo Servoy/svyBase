@@ -56,7 +56,6 @@ var RECORD_SELECTION_POLICY = {
      */
     PREVENT_WHEN_EDITING: 'prevent-when-editing',
 	
-	
     /**
      * Prevents the selection of other records while editing and validation has errors.
      */
