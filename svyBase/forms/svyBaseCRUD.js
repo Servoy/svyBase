@@ -874,7 +874,7 @@ function onElementDataChangeHandler(oldValue, newValue, event) {
         return true;
     } finally {
         updateStandardFormActionsState();
-        updateUIHandler(createDummyJSEvent(), BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
+        updateUIHandler(event, BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
     }
 }
 
@@ -1235,7 +1235,7 @@ function onEventBubble(event, bubbleEventType) {
                 var markers = validate(getEditedRecords());
                 updateValidationMarkersUI(markers, event);
             } else {
-                updateUIHandler(createDummyJSEvent(), BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
+                updateUIHandler(event, BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
             }
             break;
         }
@@ -1621,12 +1621,13 @@ function setFoundSet(foundsetToSet) {
  * 
  * @param {String} [name]
  * @param {String} [type]
+ * @param {String} [elementName]
  * 
  * @protected  
  *
  * @properties={typeid:24,uuid:"18D91B20-A132-45C7-A4F4-0B1D8B0F3998"}
  */
-function createDummyJSEvent(name, type) {
+function createDummyJSEvent(name, type, elementName) {
 	/** @type {JSEvent} */
 	var result = {
 		formName: controller.getName(),
@@ -1636,7 +1637,7 @@ function createDummyJSEvent(name, type) {
 			return controller.getName()
 		},
 		getElementName: function() {
-			return this.formName;
+			return elementName;
 		},
 		getModifiers: function() {
 			return null;
