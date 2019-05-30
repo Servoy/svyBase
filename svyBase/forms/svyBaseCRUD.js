@@ -323,7 +323,7 @@ function deleteValidatedRecords(records){
 
         // delete record
         try {
-            if (!foundset.deleteRecord(record)) {
+            if (!record.foundset.deleteRecord(record)) {
                 throw new scopes.svyDataUtils.DeleteRecordFailedException('Delete Record Failed: ' + record.exception, record);
             }
 
