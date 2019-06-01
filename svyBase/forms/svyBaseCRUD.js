@@ -450,6 +450,7 @@ function save() {
     var records = getEditedRecords();
     if (!records.length) {
     	afterSave(records);
+        updateStandardFormActionsState();
     	updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
         return true;
     }
@@ -619,6 +620,7 @@ function cancel() {
     var records = getEditedRecords();
     if (!records.length) {
     	afterCancel(records);
+    	updateStandardFormActionsState();
     	updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.CANCEL);    	
         return true;
     }
