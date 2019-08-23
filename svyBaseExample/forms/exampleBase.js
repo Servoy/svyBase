@@ -189,7 +189,7 @@ function removeActionPropChangeListeners(){
  *
  * @properties={typeid:24,uuid:"B2D40390-2ED4-4544-8061-6B2F5AA1E707"}
  */
-function initializingForm() {
+function onLoad() {
     setFormPolicies();
     addCustomActions();
     buildToolbar();
@@ -203,7 +203,7 @@ function initializingForm() {
  *
  * @properties={typeid:24,uuid:"8FC668F5-2CD2-4221-AF64-4DDCB20F0FA1"}
  */
-function uninitializingForm() {
+function onUnload() {
     removeActionPropChangeListeners();
 }
 
