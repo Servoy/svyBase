@@ -1446,6 +1446,24 @@ function onLoadHandler(event) {
 }
 
 /**
+ * Provides internal handling to the event fired when the form is shown.
+ * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
+ * It is recommended that extending forms do not override this method. Instead, they should override the dedicated {@link onShow} method.
+ *
+ * @private 
+ * @param {Boolean} firstShow True if the form is shown for the first time after load.
+ * @param {JSEvent} event The event that triggered the action.
+ *
+ * @properties={typeid:24,uuid:"3ED8A13F-404E-4FAB-8396-3288C3A367C9"}
+ * @override
+ */
+function onShowHandler(firstShow, event) {
+	lastSelectedRecord = foundset.getSelectedRecord();
+	 //using applySuper to overcome encapsulation warnings
+    applySuper('onShowHandler', [firstShow, event]);
+}
+
+/**
  * This method adds(registers) the standard form actions implemented by svyBaseCRUD form.
  * It is automatically called when the form is being loaded.
  * 
@@ -1566,7 +1584,12 @@ function onHideHandler(event) {
         }
     }
     //using applySuper to overcome encapsulation warnings
-    return applySuper('onHideHandler', [event]);
+    var result = applySuper('onHideHandler', [event]);
+    if (result !== false) {
+    	// clear the lastSelectedRecord
+    	lastSelectedRecord = null;
+    }
+    return result;
 }
 
 /**
