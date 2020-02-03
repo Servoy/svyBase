@@ -283,3 +283,23 @@ function CRUDPolicies() {
         return this.validationPolicy;
     }
 }
+
+/**
+ * Indicates if there are any changed or new records.
+ * @public
+ * @return {Boolean} True if there are any changed or new records.
+ * @properties={typeid:24,uuid:"41D67DA4-F6D8-4B22-B439-58EA117DF051"}
+ */
+function hasEdits() {
+	// TODO shall check also for failed records ?
+	var records = databaseManager.getEditedRecords();
+	for (var i = 0; i < records.length; i++) {
+		if (records[i] instanceof JSRecord) {
+			if (records[i].hasChangedData() || records[i].isNew()) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
