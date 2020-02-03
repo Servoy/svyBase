@@ -6,6 +6,21 @@
  *
  * TODO Consider a way to watch all svyBase contained forms for events
  */
+/**
+ * @private
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"D59F9692-E595-4A39-AEC9-EB420E787D77"}
+ */
+var BUBBLE_EVENT_TYPE_NAME = 'svy-bubble-event';
+
+/**
+ * @private
+ * @type {String}
+ *
+ * @properties={typeid:35,uuid:"D5A235FC-0F4C-424F-B89E-15A9BE6F40BF"}
+ */
+var VALIDATE_EVENT_TYPE_NAME = 'svy-validate-event';
 
 /**
  * Enumeration used in the onEventBubble arguments to indicate the type of the event being bubbled.
@@ -194,6 +209,7 @@ function onRecordSelectionHandler(event) {
     } finally {
         updateUIHandler(event, BUBBLE_EVENT_TYPES.RECORD_SELECT);
     }
+    // TODO what is the point of bubbling onRecordSelection ?
     bubble(event, BUBBLE_EVENT_TYPES.RECORD_SELECT);
 }
 
@@ -209,9 +225,15 @@ function onRecordSelectionHandler(event) {
  * @properties={typeid:24,uuid:"3F55B248-8B06-4D1B-B662-CAEF7EF09DE5"}
  */
 function onShowHandler(firstShow, event) {
+	// listen for events from other forms
+	addBubbleEventListener();
+	
+	// listen for validate events
+	addValidateEventListener();
+	
 	onShow(firstShow, event);
     updateUIHandler(event, BUBBLE_EVENT_TYPES.FORM_SHOW);
-    bubble(event, BUBBLE_EVENT_TYPES.FORM_SHOW);
+//    bubble(event, BUBBLE_EVENT_TYPES.FORM_SHOW);
 }
 
 /**
@@ -258,8 +280,17 @@ function onElementFocusLostHandler(event) {
  * @properties={typeid:24,uuid:"F2F39B1A-2DDC-4F8D-ACD4-20E8627AD397"}
  */
 function onHideHandler(event) {
-    if (onHide(event)) {
-        return bubble(event, BUBBLE_EVENT_TYPES.FORM_HIDE);
+    if (onHide(event) != false) {
+    	// TODO replace bubble with event fire. 
+    	// How can i get a result back ?
+        if (bubble(event, BUBBLE_EVENT_TYPES.FORM_HIDE) != false) {
+        	// remove the listener for validate events
+        	removeValidateEventListener();
+        	
+        	// remove the listener only if hide is different than false
+        	removeBubbleEventListener();
+        	return true;
+        }
     }
     return false;
 }
@@ -276,10 +307,11 @@ function onHideHandler(event) {
  */
 function onLoadHandler(event) {
     onLoad(event);
-    bubble(event, BUBBLE_EVENT_TYPES.FORM_LOAD);
+//    bubble(event, BUBBLE_EVENT_TYPES.FORM_LOAD);
 }
 
 /**
+ * @deprecated 
  * Provides internal handling to the event fired when the user starts to edit a record on the form.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
@@ -293,10 +325,12 @@ function onLoadHandler(event) {
  */
 function onRecordEditStartHandler(event) {
     updateUIHandler(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_START);
-    return bubble(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_START);
+//    return bubble(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_START);
+	return true;
 }
 
 /**
+ * @deprecated 
  * Provides internal handling to the event fired when the user stops editing a record on the form.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
@@ -310,10 +344,12 @@ function onRecordEditStartHandler(event) {
  */
 function onRecordEditStopHandler(record, event) {
     updateUIHandler(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_STOP);
-    return bubble(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_STOP);
+//    return bubble(event, BUBBLE_EVENT_TYPES.RECORD_EDIT_STOP);
+	return true;
 }
 
 /**
+ * @deprecated 
  * Provides internal handling to the event fired when the form is resized.
  * If a parent form is available and it extends the svyBase then this event will "bubble up" to the parent through the {@link onEventBubble} method.
  * 
@@ -324,7 +360,7 @@ function onRecordEditStopHandler(record, event) {
  */
 function onResizeHandler(event) {
     updateUIHandler(event, BUBBLE_EVENT_TYPES.FORM_RESIZE);
-    bubble(event, BUBBLE_EVENT_TYPES.FORM_RESIZE);
+//    bubble(event, BUBBLE_EVENT_TYPES.FORM_RESIZE);
 }
 
 /**
@@ -339,7 +375,7 @@ function onResizeHandler(event) {
  */
 function onUnloadHandler(event) {
     onUnload(event);
-    bubble(event, BUBBLE_EVENT_TYPES.FORM_UNLOAD);
+//    bubble(event, BUBBLE_EVENT_TYPES.FORM_UNLOAD);
 }
 
 /**
@@ -358,21 +394,26 @@ function bubble(event, bubbleEventType) {
     if (event.getFormName() != controller.getName()) {
 
         // bubble handler / check if blocked
-        if (onEventBubble(event, bubbleEventType) === false) {
-            return false;
-        }
+//        if (onEventBubble(event, bubbleEventType) === false) {
+//             return false;
+//        }
     }
+    
+	// fire event bubble
+	var eventData = new scopes.svyEventManager.Event(bubbleEventType, controller.getName(), [event]);
+	scopes.svyEventManager.fireEvent(BUBBLE_EVENT_TYPE_NAME, BUBBLE_EVENT_TYPE_NAME, eventData, true);
+	
 
-    // bubble to parent form
-    var parentName = scopes.svyUI.getParentFormName(this);
-    if (parentName) {
-        var parent = forms[parentName];
-        if (parent && scopes.svyUI.isJSFormInstanceOf(parent, 'svyBase')) {
-            /** @type {{bubble: function(JSEvent, String)}} */
-            var p = parent; //using this to suppress the "...is private" warning even though we are accessing a protected method
-            return p.bubble(event, bubbleEventType);
-        }
-    }
+//    // bubble to parent form
+//    var parentName = scopes.svyUI.getParentFormName(this);
+//    if (parentName) {
+//        var parent = forms[parentName];
+//        if (parent && scopes.svyUI.isJSFormInstanceOf(parent, 'svyBase')) {
+//            /** @type {{bubble: function(JSEvent, String)}} */
+//            var p = parent; //using this to suppress the "...is private" warning even though we are accessing a protected method
+//            return p.bubble(event, bubbleEventType);
+//        }
+//    }
 
     // outer-most form has been reached
     return true;
@@ -629,4 +670,89 @@ function loadRecords(foundsetOrRecordToLoad) {
  */
 function setFoundSet(foundsetToSet) {
 	return controller.loadRecords(foundsetToSet);
+}
+
+/**
+ * Register for bubble events
+ * @private
+ * @properties={typeid:24,uuid:"259BD107-3440-4869-89F3-72737CB336C4"}
+ */
+function addBubbleEventListener() {
+	scopes.svyEventManager.addListener(BUBBLE_EVENT_TYPE_NAME, BUBBLE_EVENT_TYPE_NAME, onEventBubbleHandler);
+}
+
+/**
+ * Deregister for bubble events
+ * @private
+ * @properties={typeid:24,uuid:"557A83A9-B4FA-47EA-8EB1-6970F64599FF"}
+ */
+function removeBubbleEventListener() {
+	scopes.svyEventManager.removeListener(BUBBLE_EVENT_TYPE_NAME, BUBBLE_EVENT_TYPE_NAME, onEventBubbleHandler);
+}
+
+/**
+ * @private
+ * @param {scopes.svyEventManager.Event} event
+ *
+ * @properties={typeid:24,uuid:"6E5A78F3-91D1-4113-8E04-97859569CCBD"}
+ */
+function onEventBubbleHandler(event) {
+	var eventData = event.data;
+
+	/** @type {JSEvent} */
+	var jsEvent = eventData[0];
+	// if event comes from different form
+	if (jsEvent && jsEvent.getFormName() == controller.getName()) {
+		return;
+	}
+	
+	var bubbleEventType = event.getType();
+	onEventBubble(jsEvent, bubbleEventType);
+	
+	// TODO update validations
+}
+
+/**
+ * Register for validation events
+ * @private
+ * @properties={typeid:24,uuid:"77C4457F-DDE1-4B50-A076-03015533D9E3"}
+ */
+function addValidateEventListener() {
+	// TODO should check for policy type ( would be a global policy setting )
+	scopes.svyEventManager.addListener(VALIDATE_EVENT_TYPE_NAME, VALIDATE_EVENT_TYPE_NAME, onEventValidateHandler);
+}
+
+/**
+ * Deregister for validation events
+ * @private
+ * @properties={typeid:24,uuid:"E22D2A9E-7F53-4429-91B6-855ADF72C2A5"}
+ */
+function removeValidateEventListener() {
+	// TODO should check for policy type ( would be a global policy setting )
+	scopes.svyEventManager.removeListener(VALIDATE_EVENT_TYPE_NAME, VALIDATE_EVENT_TYPE_NAME, onEventValidateHandler);
+}
+
+/**
+ * @private
+ * @param {scopes.svyEventManager.Event} event
+ *
+ * @properties={typeid:24,uuid:"71A618EB-B9C7-4CB0-BCEC-035B42C4AD27"}
+ */
+function onEventValidateHandler(event) {
+	var eventData = event.data;
+
+	/** @type {JSEvent} */
+	var jsEvent = eventData[0];
+	// if event comes from different form
+	if (event.getSource() == controller.getName()) {
+		 return;
+	}
+	
+	var validationMarkers = eventData[1];
+	if (validationMarkers && validationMarkers.length) {
+		updateValidationMarkersUI(validationMarkers, jsEvent);
+	} else {
+		clearValidationMarkersUI([])
+	}
+	
 }

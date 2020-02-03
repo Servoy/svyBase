@@ -289,6 +289,7 @@ function deleteSelectedRecords() {
     }
 
     clearValidationMarkers();
+    updateValidationMarkersHandler(getValidationMarkers(), null);
     
     try {
         // remove from tracking
@@ -471,7 +472,7 @@ function save() {
         // validate
         if (getCrudPolicies().getValidationPolicy() != scopes.svyCRUDManager.VALIDATION_POLICY.NONE) {
             var markers = validate(records);
-            updateValidationMarkersUI(markers, null);
+            updateValidationMarkersHandler(markers, null);
             if (hasErrors(markers)) {
             	onValidationError(markers, FORM_ACTION_NAMES.SAVE);
                 updateUIHandler(createDummyJSEvent(), FORM_ACTION_NAMES.SAVE);
@@ -519,6 +520,7 @@ function save() {
 
     // clear validation markers
     clearValidationMarkers();
+    updateValidationMarkersHandler(getValidationMarkers(), null);
 
     try {
         // clear tracked records
@@ -639,7 +641,7 @@ function cancel() {
 
         // clear validation markers
         clearValidationMarkers();
-        updateValidationMarkersUI(getValidationMarkers(), null);
+        updateValidationMarkersHandler(getValidationMarkers(), null);
         
         releaseAllLocks();
 
@@ -869,7 +871,7 @@ function onElementDataChangeHandler(oldValue, newValue, event) {
         // Continuous validation
         if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
             var markers = validate(getEditedRecords());
-            updateValidationMarkersUI(markers, event);
+            updateValidationMarkersHandler(markers, event);
             // TODO Consider returning false  to block data change ?
         }
 
@@ -1011,6 +1013,21 @@ function trackDataChange(event) {
 }
 
 /**
+ * @private 
+ * @param {Array<scopes.svyValidationManager.ValidationMarker>} markers
+ * @param {JSEvent} [event]
+ *
+ * @properties={typeid:24,uuid:"588BD0EC-5DDC-484F-B4C5-C07FC6CA0F53"}
+ */
+function updateValidationMarkersHandler(markers, event) {
+    updateValidationMarkersUI(markers, event);
+    
+	// fire event bubble
+	var eventData = new scopes.svyEventManager.Event(VALIDATE_EVENT_TYPE_NAME, controller.getName(), [event, markers]);
+	scopes.svyEventManager.fireEvent(VALIDATE_EVENT_TYPE_NAME, VALIDATE_EVENT_TYPE_NAME, eventData, true);
+}
+
+/**
  * This method is used to validate record changes before [saving]{@link save} them in the database.
  * If the validation [policy]{@link getCrudPolicies} is set to CONTINUOUS then this validation method will be called after each data change.  
  * Its default implementation uses the available validation providers associated with the datasources of the specified records to perform the actual validation.
@@ -1136,10 +1153,12 @@ function getEditedRecords() {
     var poli = getCrudPolicies().getBatchScopePolicy();
     switch (poli) {
         case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.ALL: {
+        	// TODO shall get also Failed Records !?
             records = databaseManager.getEditedRecords();
             break;
         }
         case scopes.svyCRUDManager.BATCH_SCOPE_POLICY.FOUNDSET: {
+        	// TODO should get also Failed Records ?
             records = databaseManager.getEditedRecords(foundset)
             break;
         }
@@ -1187,8 +1206,8 @@ function getValidationMarkers() {
  * @properties={typeid:24,uuid:"2946BFE1-3027-44BE-8BE3-BC3F38A69AB9"}
  */
 function clearValidationMarkers() {
-	clearValidationMarkersUI(validationMarkers);
-    validationMarkers = [];
+	validationMarkers = [];
+//	clearValidationMarkersUI(validationMarkers);
 }
 
 /**
@@ -1239,7 +1258,9 @@ function onEventBubble(event, bubbleEventType) {
             if (getCrudPolicies().getValidationPolicy() == scopes.svyCRUDManager.VALIDATION_POLICY.CONTINUOUS) {
                 //this will update the UI as well
                 var markers = validate(getEditedRecords());
-                updateValidationMarkersUI(markers, event);
+                // TODO do i need to propagate the event !?
+                // updateValidationMarkersUI(markers, event);
+                updateValidationMarkersHandler(markers,event);
             } else {
                 updateUIHandler(event, BUBBLE_EVENT_TYPES.ELEMENT_DATA_CHANGE);
             }
@@ -1292,6 +1313,8 @@ function onRecordSelectionHandler(event) {
             }
         }
     }
+    
+    // TODO clear or Update validation at the onRecordSelection
     
     //fire handler only if the record has really been changed or we have no lastSelectedRecord
     var fireHandler = !lastSelectedRecord || (lastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === lastSelectedRecord.getPKs()[i] })));
@@ -1512,6 +1535,23 @@ function addStandardFormActions() {
  */
 function updateUIHandler(event, eventType) {
 	if (!event) event = createDummyJSEvent();
+	
+	// propagate bubble event to other visible forms
+	switch (eventType) {
+	case FORM_ACTION_NAMES.CANCEL:
+	case FORM_ACTION_NAMES.SAVE:
+	case FORM_ACTION_NAMES.NEW:
+	case FORM_ACTION_NAMES.DELETE:
+		// TODO do i need to include other type of actions ?
+		
+		/** @type {{bubble: Function}} */
+		var thisForm = this;
+		thisForm.bubble(event, eventType);
+		break;
+	default:
+		break;
+	}
+	
 	//using applySuper to overcome encapsulation warnings
 	applySuper('updateUIHandler', [event, eventType]);
 }
