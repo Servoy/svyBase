@@ -825,10 +825,10 @@ function beforeMoveRecord() {
             } else {
                 return cancel();
             }
-        } else if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY) {
+        } else if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_HAS_EDITING_ERRORS) {
     		var records = getEditedRecords();
     		var markers = validate(records);
-            updateValidationMarkersUI(markers, null);
+            updateValidationMarkersHandler(markers, null);
             if (hasErrors(markers)) {
                 return false;
             }
