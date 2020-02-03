@@ -174,7 +174,7 @@ function CRUDPolicies() {
      * @type {String}
      * @ignore
      */
-    this.batchScopePolicy = BATCH_SCOPE_POLICY.FOUNDSET;
+    this.batchScopePolicy = BATCH_SCOPE_POLICY.ALL;
 
     /**
      * @protected
