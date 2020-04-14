@@ -30,10 +30,10 @@ var VALIDATION_LEVEL = {
 function getValidationProviders(dataSource) {
 
 	var providersForDataSource = [];
-	var providers = scopes.svyUI.getRuntimeFormInstances(forms.svyAbstractValidationProvider);
+	var providers = scopes.svyUI.getJSFormInstances(forms.svyAbstractValidationProvider);
 	for (var i in providers) {
 		/** @type {RuntimeForm<svyAbstractValidationProvider>} */
-		var provider = providers[i];
+		var provider = forms[providers[i].name];
 		//TODO use scopes.svyDataUtils.getDataSource when it is available
 		//if(provider.isDataSourceSupported(scopes.svyDataUtils.getDataSource(dataSource))){
 		if (provider.isDataSourceSupported(getDataSource(dataSource))) {
