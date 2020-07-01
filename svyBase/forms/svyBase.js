@@ -7,7 +7,7 @@
  * TODO Consider a way to watch all svyBase contained forms for events
  */
 /**
- * @private
+ * @protected 
  * @type {String}
  *
  * @properties={typeid:35,uuid:"D59F9692-E595-4A39-AEC9-EB420E787D77"}
@@ -15,7 +15,7 @@
 var BUBBLE_EVENT_TYPE_NAME = 'svy-bubble-event';
 
 /**
- * @private
+ * @protected 
  * @type {String}
  *
  * @properties={typeid:35,uuid:"D5A235FC-0F4C-424F-B89E-15A9BE6F40BF"}
