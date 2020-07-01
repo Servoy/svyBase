@@ -1289,8 +1289,15 @@ function onRecordSelectionHandler(event) {
     if (lastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === lastSelectedRecord.getPKs()[i] }))) {
     	var preventSelection = false;
 		if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_EDITING) {
-			//prevent record selection when the there are edits or the record is newly created
-			preventSelection = hasEdits() || (lastSelectedRecord.hasChangedData() || lastSelectedRecord.isNew());
+            var editedRecords = databaseManager.getEditedRecords(foundset);
+			if(editedRecords.length == 1 && editedRecords[0] == selRec) {
+                //When there is only a new record, navigate should be working to the new record
+                //Example: When showing the newRecord in a popup for directly edit the navigate should work and not be blocked
+				preventSelection = false
+			} else {
+			    //prevent record selection when the there are edits or the record is newly created
+                preventSelection = hasEdits() || (lastSelectedRecord.hasChangedData() || lastSelectedRecord.isNew());
+            }
 		}
 		if (getCrudPolicies().getRecordSelectionPolicy() === scopes.svyCRUDManager.RECORD_SELECTION_POLICY.PREVENT_WHEN_HAS_EDITING_ERRORS) {
 			//prevent record selection when there are errors
