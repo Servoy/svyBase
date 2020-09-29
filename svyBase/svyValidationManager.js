@@ -20,6 +20,12 @@ var VALIDATION_LEVEL = {
 }
 
 /**
+ * @private 
+ * @properties={typeid:35,uuid:"0B3CE228-8832-4869-A6EE-FAD504892C17",variableType:-4}
+ */
+var validationProvidersMap = {};
+
+/**
  * Gets a list with the available validation providers for the specified dataSource.
  * The validation providers must extend the base svyAbstractValidationProvider class.
  * @public
@@ -28,16 +34,40 @@ var VALIDATION_LEVEL = {
  * @properties={typeid:24,uuid:"C38387AE-6E94-4077-830C-5175D7ECE737"}
  */
 function getValidationProviders(dataSource) {
-
+	
 	var providersForDataSource = [];
+	var source = getDataSource(dataSource)
+
+	// check if validation providers are already cached
+	if (validationProvidersMap[source]) {
+		for (var j = 0; j < validationProvidersMap[source].length; j++) {
+			var provider = forms[validationProvidersMap[source][j]];
+			providersForDataSource.push(provider);
+		}
+		return providersForDataSource;
+	} else {
+		// init the cache
+		validationProvidersMap[source] = [];
+	}
+	
 	var providers = scopes.svyUI.getJSFormInstances(forms.svyAbstractValidationProvider);
 	for (var i in providers) {
 		/** @type {RuntimeForm<svyAbstractValidationProvider>} */
-		var provider = forms[providers[i].name];
 		//TODO use scopes.svyDataUtils.getDataSource when it is available
 		//if(provider.isDataSourceSupported(scopes.svyDataUtils.getDataSource(dataSource))){
-		if (provider.isDataSourceSupported(getDataSource(dataSource))) {
+		
+		// DO NOT USE IS DATASOURCE SUPPORTED ANYMORE. WILL LOAD TOO MANY FORMS IN MEMORY AND FORCE UNLOADS
+//		var provider = forms[providers[i].name];
+//		if (provider.isDataSourceSupported(getDataSource(dataSource))) {
+//			providersForDataSource.push(provider);
+//		}
+		
+		var jsform = providers[i];
+		if (jsform.dataSource && jsform.dataSource === source) {
+			var provider = forms[jsform.name];
 			providersForDataSource.push(provider);
+			// store form name in cache
+			validationProvidersMap[source].push(jsform.name)
 		}
 	}
 	return providersForDataSource;
