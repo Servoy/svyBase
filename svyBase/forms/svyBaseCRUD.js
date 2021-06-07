@@ -1323,9 +1323,8 @@ function onRecordSelectionHandler(event) {
     
     // TODO clear or Update validation at the onRecordSelection
     
-    //fire handler only if the record has really been changed or we have no lastSelectedRecord
-    var fireHandler = !lastSelectedRecord || (lastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === lastSelectedRecord.getPKs()[i] })));
-    
+    //fire handler only if the record has really been changed or we have no lastSelectedRecord. If there was lastSelectedRecord but no selRec, yet the record selection is considered changed.
+    var fireHandler = !lastSelectedRecord || (lastSelectedRecord && !selRec) || (lastSelectedRecord && selRec && !(selRec.getPKs().every(function(x, i) { return x === lastSelectedRecord.getPKs()[i] })));
     lastSelectedRecord = selRec;
     updateStandardFormActionsState();
     
