@@ -260,7 +260,7 @@ function deleteSelectedRecords() {
 
             if (usingLocalTransaction) {
                 // commit transaction
-                if (!databaseManager.commitTransaction()) {
+                if (!databaseManager.commitTransaction(false)) {
 
                     // TODO consider adding transaction failed exception to svyDataUtils
                     throw new scopes.svyDataUtils.SvyDataException('Transaction Failed');
@@ -492,7 +492,7 @@ function save() {
             
             // commit transaction
             if (usingLocalTransaction) {
-                if (!databaseManager.commitTransaction()) {
+                if (!databaseManager.commitTransaction(false)) {
                     throw new scopes.svyDataUtils.SaveDataFailedException('Could not commit transaction');
                 }
             }
